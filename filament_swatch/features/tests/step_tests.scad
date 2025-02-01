@@ -78,3 +78,22 @@ module step_test_pattern(steparea_h) {
     }
   }
 }
+
+/*
+Creates cutouts for the step test pattern.
+Parameters:
+    steparea_h: Height of step area
+*/
+module step_pattern_cutouts(steparea_h) {
+  for (i = [0:len(STEP_THICKNESSES) - 1]) {
+    steparea_w = calc_step_area_width(SWATCH_WIDTH, SWATCH_WALL,
+                                    len(STEP_THICKNESSES), i);
+    translate([
+      SWATCH_WALL * 1, SWATCH_WALL * STEP_AREA_DISTANCE,
+      STEP_THICKNESSES[i] < 0 ? STEP_BRIDGE_OFFSET : STEP_THICKNESSES[i]
+    ]) {
+      rounded_square(steparea_w, steparea_h, SWATCH_THICKNESS * 2,
+                   SWATCH_ROUND);
+    }
+  }
+}

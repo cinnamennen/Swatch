@@ -129,3 +129,39 @@ module textlines(material, brand, color, textsize_upper, textsize_lower,
     TEXT_RECESS_DEPTH
   ]) create_recessed_text(color, size = textsize_lower, font = font);
 }
+
+/*
+Creates all text features for the swatch.
+Combines all text features in one place.
+Parameters:
+    material: Material name text
+    brand: Brand name text
+    color: Color name text
+    print_settings_top: Top print settings text
+    print_settings_bottom: Bottom print settings text
+    texttop_final: Text for top edge
+    textsize_upper: Font size for material text
+    textsize_lower: Font size for brand and color text
+    linesep: Line separation multiplier
+    mode: "cutouts" for cutouts, "additions" for raised features
+*/
+module create_all_text_features(material, brand, color, print_settings_top, 
+                              print_settings_bottom, texttop_final,
+                              textsize_upper, textsize_lower, linesep,
+                              mode = "cutouts") {
+  // Cutouts (to be used in difference())
+  module text_cutouts() {
+    textlines(material, brand, color, textsize_upper, textsize_lower, linesep,
+              TEXT_FONT);
+    write_text_on_top(texttop_final);
+    write_text_on_side_v3(print_settings_bottom, print_settings_top);
+  }
+  
+  // Additions (to be added in difference())
+  module text_additions() {
+    // Currently no raised text features
+  }
+  
+  if (mode == "cutouts") text_cutouts();
+  else if (mode == "additions") text_additions();
+}

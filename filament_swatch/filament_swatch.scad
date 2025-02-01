@@ -32,36 +32,21 @@ module swatch() {
   steparea_h = calc_step_area_height(SWATCH_HEIGHT, SWATCH_WALL, font_h);
 
   difference() {
-    // Create base with test pattern cutouts
-    rounded_square_test_pattern();
-
-    // Add text features
-    write_text_on_top(texttop_final);
-    write_text_on_side_v3(print_settings_bottom, print_settings_top);
-
-    // Step pattern cutouts
-    for (i = [0:len(STEP_THICKNESSES) - 1]) {
-      steparea_w = calc_step_area_width(SWATCH_WIDTH, SWATCH_WALL,
-                                        len(STEP_THICKNESSES), i);
-      translate([
-        SWATCH_WALL * 1, SWATCH_WALL * STEP_AREA_DISTANCE,
-        STEP_THICKNESSES[i] < 0 ? STEP_BRIDGE_OFFSET : STEP_THICKNESSES[i]
-      ]) {
-        rounded_square(steparea_w, steparea_h, SWATCH_THICKNESS * 2,
-                       SWATCH_ROUND);
-      }
-    }
-
-    // Text area cutout for embossed text
-    textlines(material, brand, color, textsize_upper, textsize_lower, linesep,
-              TEXT_FONT);
+    // Create base swatch shape
+    create_base_swatch();
+    
+    // Add all cutouts
+    create_all_test_features(steparea_h, "cutouts");
+    create_all_text_features(material, brand, color, print_settings_top, 
+                          print_settings_bottom, texttop_final,
+                          textsize_upper, textsize_lower, linesep, "cutouts");
   }
 
-  // Add step test pattern with measurements
-  step_test_pattern(steparea_h);
-
-  // Add raised test features
-  rounded_square_test_pattern_raised(TEST_CIRCLES);
+  // Add all raised/additive features
+  create_all_test_features(steparea_h, "additions");
+  create_all_text_features(material, brand, color, print_settings_top, 
+                        print_settings_bottom, texttop_final,
+                        textsize_upper, textsize_lower, linesep, "additions");
 }
 
 swatch();
