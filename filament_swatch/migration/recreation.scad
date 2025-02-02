@@ -7,7 +7,7 @@ $show_anchors = true;
 $debugger = true;
 
 // Constants
-LEFT_SHELF_OFFSET = 8; // How far the shelf extends to the left
+LEFT_SHELF_OFFSET = 5; // How far the shelf extends to the left
 SHELF_THICKNESS = 2;
 // Our new geometric recreation
 module recreation() {
@@ -49,6 +49,7 @@ module recreation() {
                     radius = 0.5, // Same 0.5mm rounding for inner path
                     $fn = 32);
 
+  // Create the base with cutout
   difference() {
     // Outer shell with rounded edges
     offset_sweep(rounded_base, height = thickness, check_valid = false,
@@ -62,18 +63,26 @@ module recreation() {
                      top = os_circle(r = -0.5));
   }
 
-  // Create shelf as chamfered cuboid
-  translate([ LEFT_SHELF_OFFSET / 2 + width / 2, height / 2, 0 ])
-  diff()
-      prismoid(size1 = [ width - LEFT_SHELF_OFFSET - 1, height - 1 ],
-               size2 = [ width - LEFT_SHELF_OFFSET - 1, height - 1 ],
-               h = SHELF_THICKNESS, chamfer = [
-                 chamfer_right, chamfer_left - LEFT_SHELF_OFFSET,
-                 chamfer_left - LEFT_SHELF_OFFSET,
-                 chamfer_right
-               ]) {
-    edge_profile([ TOP + LEFT, BOTTOM + LEFT ]) {
-      mask2d_roundover(r=.5, mask_angle = $edge_angle, $fn=32);
-    }
-  }
+  // Create shelf path by copying base points but adjusting for shelf
+  shelf_path = [
+    for (i = [0:len(inner_path)-1])
+      if (i<=1)
+      [inner_path[i].x+.5, inner_path[i].y-.5]
+      else if (i<=3)
+        [inner_path[i].x+.5, inner_path[i].y+.5]
+     
+      else if (i==4)
+        [inner_path[i].x-.5, inner_path[i].y+.5]
+      else if (i==5)
+        [inner_path[i].x+LEFT_SHELF_OFFSET-.5, inner_path[i].y+LEFT_SHELF_OFFSET+.5]
+      else if (i == 6)  // Adjust left bottom corner
+        [inner_path[i].x+LEFT_SHELF_OFFSET-.5, inner_path[i].y-LEFT_SHELF_OFFSET-.5]
+      else  // Adjust left bottom point
+        [inner_path[i].x-.5, inner_path[i].y-.5]
+  ];
+
+  // Create shelf with straight edges since we'll join it later
+  translate([0, 0, 0])
+    linear_extrude(height=SHELF_THICKNESS)
+      polygon(shelf_path);
 }
