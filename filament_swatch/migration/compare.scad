@@ -3,7 +3,7 @@ include <recreation.scad>
 
 // Colored visualizations of differences
 module show_differences() {
-  color("green", 1) recreation();
+  color("green", .7) recreation();
   color("grey", .7) translate([-82.75, -86.5, 0])
       import("../assets/Sample-B.stl");
   //   color("red", 0.7) extra();

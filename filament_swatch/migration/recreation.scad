@@ -13,16 +13,20 @@ module recreation() {
     height = 37;
     thickness = 3.31;
     
+    // Chamfer parameters
+    chamfer_right = 3.0;   // Right side chamfer length
+    chamfer_left = 8.5;   // Left side chamfer length
+    
     // Create base shape with chamfered corners
     base = [
-        [width-4, 0],      // End of chamfer
-        [width, 4],        // Corner point
-        [width, height-4], // Start of chamfer
-        [width-4, height], // End of chamfer
-        [12, height],      // End of chamfer
-        [0, height-12],    // Corner point
-        [0, 12],          // Corner point
-        [12, 0]           // End of chamfer
+        [width-chamfer_right, 0],           // End of right chamfer
+        [width, chamfer_right],             // Right corner point
+        [width, height-chamfer_right],      // Start of right chamfer
+        [width-chamfer_right, height],      // End of right chamfer
+        [chamfer_left, height],             // End of left chamfer
+        [0, height-chamfer_left],           // Left corner point
+        [0, chamfer_left],                  // Left corner point
+        [chamfer_left, 0]                   // End of left chamfer
     ];
     
     // Round all transition points with consistent radius
@@ -31,7 +35,7 @@ module recreation() {
         $fn=32
     );
     rounded_inner = round_corners(
-        offset(base, r=-3, closed=true, check_valid=false),  // Increased to -2mm for 2mm flat surface
+        offset(base, r=-3, closed=true, check_valid=false),
         radius=0.5,  // Same 0.5mm rounding for inner path
         $fn=32
     );
