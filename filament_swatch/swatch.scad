@@ -34,19 +34,23 @@ module swatch() {
   difference() {
     // Create base swatch shape
     create_base_swatch();
-    
+
     // Add all cutouts
+    /*
     create_all_test_features(steparea_h, "cutouts");
-    create_all_text_features(material, brand, color, print_settings_top, 
-                          print_settings_bottom, texttop_final,
-                          textsize_upper, textsize_lower, linesep, "cutouts");
+    create_all_text_features(
+        material, brand, color, print_settings_top, print_settings_bottom,
+        texttop_final, textsize_upper, textsize_lower, linesep, "cutouts");
+    */
   }
 
   // Add all raised/additive features
+  /*
   create_all_test_features(steparea_h, "additions");
-  create_all_text_features(material, brand, color, print_settings_top, 
-                        print_settings_bottom, texttop_final,
-                        textsize_upper, textsize_lower, linesep, "additions");
+  create_all_text_features(material, brand, color, print_settings_top,
+                           print_settings_bottom, texttop_final, textsize_upper,
+                           textsize_lower, linesep, "additions");
+  */
 }
 
 swatch();
