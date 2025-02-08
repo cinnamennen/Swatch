@@ -8,7 +8,7 @@ $debugger = true;
 
 // Constants
 LEFT_SHELF_OFFSET = 5; // How far the shelf extends to the left
-SHELF_THICKNESS = 2;
+SHELF_THICKNESS = 4;
 // Our new geometric recreation
 module recreation() {
   // Base dimensions
@@ -57,10 +57,9 @@ module recreation() {
                  top = os_circle(r = 0.5));
 
     // Inner cutout with rounded edges
-    up(-0.4)
-        offset_sweep(rounded_inner, height = thickness + 0.4001, steps = 32,
-                     check_valid = false, bottom = os_circle(r = -0.5),
-                     top = os_circle(r = -0.5));
+    offset_sweep(rounded_inner, height = thickness, steps = 32,
+                 check_valid = false, bottom = os_circle(r = -0.5),
+                 top = os_circle(r = -0.5));
   }
 
   // Create shelf path by copying base points but adjusting for shelf
@@ -81,8 +80,19 @@ module recreation() {
         [inner_path[i].x-.5, inner_path[i].y-.5]
   ];
 
-  // Create shelf with straight edges since we'll join it later
+  // Create shelf with straight edges
   translate([0, 0, 0])
     linear_extrude(height=SHELF_THICKNESS)
       polygon(shelf_path);
+
+  // Add fillets at the transition points (5 and 6)
+  // Top transition (point 5)
+  translate([shelf_path[5].x, shelf_path[5].y - 1, 0])
+    fillet(l=SHELF_THICKNESS, r=0.5, ang=45, $fn=32,
+           orient=UP, spin=180+45, anchor=BOTTOM);
+  
+  // Bottom transition (point 6)
+  translate([shelf_path[6].x, shelf_path[6].y + 1, 0])
+    fillet(l=SHELF_THICKNESS, r=0.5, ang=45, $fn=32,
+           orient=UP, spin=180-90, anchor=BOTTOM);
 }
