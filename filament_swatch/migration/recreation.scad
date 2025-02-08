@@ -8,7 +8,7 @@ $debugger = true;
 
 // Constants
 LEFT_SHELF_OFFSET = 5; // How far the shelf extends to the left
-SHELF_THICKNESS = 4;
+SHELF_THICKNESS = 2.75;
 // Our new geometric recreation
 module recreation()
 {
@@ -55,7 +55,9 @@ module recreation()
                 [inner_path[i].x + LEFT_SHELF_OFFSET, inner_path[i].y - LEFT_SHELF_OFFSET] else[inner_path[i].x,
                                                                                                 inner_path[i].y]];
 
-    handle_path = [ shelf_path[6], shelf_path[5], inner_path[5], inner_path[6] ];
+    // Create path for the roundover, pulling points closer to the corner
+    _handle_path = [ inner_path[4], inner_path[5], inner_path[6], inner_path[7] ];
+    handle_path = round_corners(_handle_path, radius = 0.5, $fn = 32);
     // Our new geometric recreation
 
     difference()
@@ -66,25 +68,21 @@ module recreation()
             difference()
             {
                 // Outer shell with rounded edges
-                offset_sweep(rounded_base, height = thickness, check_valid = false,
-                             bottom = os_circle(r = 0.5), top = os_circle(r = 0.5));
+                offset_sweep(rounded_base, height = thickness, check_valid = false, bottom = os_circle(r = 0.5),
+                             top = os_circle(r = 0.5));
 
                 // Inner cutout with rounded edges
-                offset_sweep(rounded_inner, height = thickness, check_valid = false
-                           );
+                offset_sweep(rounded_inner, height = thickness, check_valid = false);
             }
-            translate([ 0, 0, 0 ]) linear_extrude(height = SHELF_THICKNESS) polygon(shelf_path);
+            linear_extrude(height = SHELF_THICKNESS) polygon(shelf_path);
 
             // Create shelf with straight edges and roundover
         }
-        translate([0, 0, 0])
-            offset_sweep(
-                path = handle_path,
-                height = height,
-                bottom = os_circle(r=-.5),  // 1mm roundover radius
-                top = os_circle(r=-.5),
-                check_valid = false
-            );
+        offset_sweep(path = handle_path, height = thickness,
+                     bottom = os_circle(r = -.5), // 1mm roundover radius
+                     top = os_circle(r = -.5), check_valid = false);
+        up(SHELF_THICKNESS) offset_sweep(rounded_inner, height = thickness - SHELF_THICKNESS, check_valid = false,
+                                         top = os_circle(r = -0.5));
     }
 
     // Debug visualization - show the handle interior path
