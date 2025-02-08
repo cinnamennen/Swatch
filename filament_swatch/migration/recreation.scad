@@ -8,7 +8,7 @@ $debugger = true;
 
 // Constants
 LEFT_SHELF_OFFSET = 5; // How far the shelf extends to the left
-SHELF_THICKNESS = 2.75;
+SHELF_THICKNESS = 2;
 // Our new geometric recreation
 module recreation()
 {
