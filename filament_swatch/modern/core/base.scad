@@ -14,29 +14,11 @@ include <paths.scad>
  */
 module base(anchor=CENTER, spin=0, orient=UP)
 {
-    
-    eps = $preview ? PREVIEW_EPSILON : 0;  // Only apply epsilon in preview mode
-
-    // Get centered paths
-    base_path = [for(p = get_base_path()) 
-        [p.x - BASE_WIDTH/2, p.y]];  // Only center X, Y is already centered
-    inner_path = [for(p = get_inner_path()) 
-        [p.x - BASE_WIDTH/2, p.y]];  // Only center X, Y is already centered
-    shelf_path = [for(p = get_shelf_points()) 
-        [p.x - BASE_WIDTH/2, p.y]];  // Only center X, Y is already centered
-
-    // Define named anchors for working area corners
-    // All anchors point inward (towards origin) along X axis
-
-
-    // Create rounded paths
-    rounded_base = round_corners(base_path, radius=CORNER_RADIUS, $fn=SEGMENTS);
-    rounded_inner = round_corners(inner_path, radius=CORNER_RADIUS, $fn=SEGMENTS);
-    handle_path = round_corners(
-        get_handle_path(inner_path),
-        radius=CORNER_RADIUS + eps, 
-        $fn=SEGMENTS
-    );
+    // Get all paths - already centered and rounded
+    shelf_path = get_shelf_points();
+    rounded_base = get_rounded_base_path();
+    rounded_inner = get_rounded_inner_path();
+    handle_path = get_rounded_handle_path();
 
     // Make the base attachable
     attachable(anchor, spin, orient, size=[BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS]) {
@@ -48,42 +30,38 @@ module base(anchor=CENTER, spin=0, orient=UP)
                 difference() {
                     // Outer shell
                     offset_sweep(rounded_base, 
-                        height=BASE_THICKNESS + eps,
+                        height=BASE_THICKNESS,
                         bottom=os_circle(r=CORNER_RADIUS), 
                         top=os_circle(r=CORNER_RADIUS),
                         check_valid=false
                     );
                     // Inner cutout
-                    down(eps)
                         offset_sweep(rounded_inner, 
-                            height=BASE_THICKNESS + 3*eps,
+                            height=BASE_THICKNESS,
                             check_valid=false
                         );
                 }
                 // Add shelf
-                move([eps, eps, 0])
-                    linear_extrude(height=SHELF_THICKNESS + eps) 
+                    linear_extrude(height=SHELF_THICKNESS) 
                         polygon(shelf_path);
             }
             // Handle cutout
-            move([-eps, -eps, -eps])
+            down(P_EPSILON)
                 offset_sweep(path=handle_path, 
-                    height=BASE_THICKNESS + 3*eps,
-                    bottom=os_circle(r=-INNER_ROUNDOVER - eps),
-                    top=os_circle(r=-INNER_ROUNDOVER - eps),
+                    height=BASE_THICKNESS,
+                    bottom=os_circle(r=-INNER_ROUNDOVER),
+                    top=os_circle(r=-INNER_ROUNDOVER),
                     check_valid=false
                 );
             // Top inner cutout
-            up(SHELF_THICKNESS - eps)
+            up(SHELF_THICKNESS)
+            up(P_EPSILON)
                 offset_sweep(rounded_inner, 
-                    height=BASE_THICKNESS - SHELF_THICKNESS + 3*eps,
-                    top=os_circle(r=-INNER_ROUNDOVER - eps),
+                    height=BASE_THICKNESS - SHELF_THICKNESS,
+                    top=os_circle(r=-INNER_ROUNDOVER),
                     check_valid=false
                 );
         }
         children();
     }
 }
-
-// Render when this is the main file
-base(); 
