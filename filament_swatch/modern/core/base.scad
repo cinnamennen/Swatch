@@ -83,20 +83,15 @@ module cutouts()
  *
  * All dimensions in millimeters.
  */
-module base(anchor = CENTER, spin = 0, orient = UP)
+module base()
 {
-    // Make the base attachable
-    attachable(anchor, spin, orient, size = [ BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS ])
+    difference()
     {
-        difference()
+        union()
         {
-            union()
-            {
-                frame();
-                shelf();
-            }
-            cutouts();
+            frame() if ($children > 0) children(0);  // First child goes to frame
+            shelf() if ($children > 1) children(1);  // Second child goes to shelf
         }
-        children();
+        cutouts();
     }
 }
