@@ -10,13 +10,16 @@ include <vars.scad>
  */
 module base_shell()
 {
-    difference()
-    {
-        // Outer shell
-        offset_sweep(get_rounded_base_path(), height = BASE_THICKNESS, bottom = os_circle(r = CORNER_RADIUS),
-                     top = os_circle(r = CORNER_RADIUS), check_valid = false);
-        // Inner cutout
-        offset_sweep(get_rounded_inner_path(), height = BASE_THICKNESS, check_valid = false);
+    attachable(size=[BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS]) {
+        difference()
+        {
+            // Outer shell
+            offset_sweep(get_rounded_base_path(), height = BASE_THICKNESS, bottom = os_circle(r = CORNER_RADIUS),
+                         top = os_circle(r = CORNER_RADIUS), check_valid = false);
+            // Inner cutout
+            offset_sweep(get_rounded_inner_path(), height = BASE_THICKNESS, check_valid = false);
+        }
+        children();
     }
 }
 
@@ -38,14 +41,17 @@ module shelf()
     center_y = (top_y + bottom_y) / 2;
     z_pos = SHELF_THICKNESS / 2;
 
-    union() {
-        // Main shelf
-        translate([ left_edge_x + shelf_width / 2, center_y, z_pos ])
-            cuboid([ shelf_width, shelf_height, SHELF_THICKNESS ], anchor = CENTER);
-            
-        // 1mm extension to fill gap
-        translate([ left_edge_x - 0.5, center_y, z_pos ])
-            cuboid([ 1, shelf_height, SHELF_THICKNESS ], anchor = CENTER);
+    attachable(size=[shelf_width, shelf_height, SHELF_THICKNESS]) {
+        union() {
+            // Main shelf
+            translate([ left_edge_x + shelf_width / 2, center_y, z_pos ])
+                cuboid([ shelf_width, shelf_height, SHELF_THICKNESS ], anchor = CENTER);
+                
+            // 1mm extension to fill gap
+            translate([ left_edge_x - 0.5, center_y, z_pos ])
+                cuboid([ 1, shelf_height, SHELF_THICKNESS ], anchor = CENTER);
+        }
+        children();
     }
 }
 
@@ -74,19 +80,25 @@ module cutouts()
  */
 module base(anchor = CENTER, spin = 0, orient = UP)
 {
-    color("SteelBlue")
     // Make the base attachable
     attachable(anchor, spin, orient, size = [ BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS ])
     {
+        color_overlaps("blue")
         down(BASE_THICKNESS / 2) // Center in Z axis
+        union() {
             difference()
-        {
-            union()
             {
-                base_shell();
-                shelf();
+                union()
+                {
+                    base_shell() {
+                        highlight() recolor("red") attach(LEFT, CENTER) sphere(r=4);
+                    }
+                    shelf() {
+                        highlight() recolor("green") attach(TOP, CENTER) sphere(r=4);
+                    }
+                }
+                cutouts();
             }
-            cutouts();
         }
         children();
     }
