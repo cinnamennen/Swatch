@@ -5,6 +5,9 @@ Starting with basic circle test features
 
 include <core/base.scad>
 include <features/circles.scad>
+include <core/frame_attachments.scad>
+include <core/shelf_attachments.scad>
+
 
 // Wrapper modules to group children
 module frame_attachments()
@@ -15,13 +18,14 @@ module frame_attachments()
 
 module shelf_attachments()
 {
+    // shelf_cylinders();
     // recolor("green") attach(TOP, CENTER) sphere(r = 4);
     // recolor("yellow") attach(BOTTOM, CENTER) sphere(r = 4);
 }
 
 module create_swatch()
 {
-    recolor("SteelBlue") base()
+    base()
     {
         frame_attachments();
         shelf_attachments();
