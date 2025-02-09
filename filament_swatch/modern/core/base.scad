@@ -6,14 +6,14 @@ include <vars.scad>
 // Debug visualization of inner path points
 
 /**
- * Creates the main outer shell with inner cutout
+ * Creates the main outer frame with inner cutout
  */
-module base_shell()
+module frame()
 {
     attachable(size=[BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS]) {
         difference()
         {
-            // Outer shell
+            // Outer frame
             offset_sweep(get_rounded_base_path(), height = BASE_THICKNESS, bottom = os_circle(r = CORNER_RADIUS),
                          top = os_circle(r = CORNER_RADIUS), check_valid = false);
             // Inner cutout
@@ -83,22 +83,15 @@ module base(anchor = CENTER, spin = 0, orient = UP)
     // Make the base attachable
     attachable(anchor, spin, orient, size = [ BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS ])
     {
-        color_overlaps("blue")
         down(BASE_THICKNESS / 2) // Center in Z axis
-        union() {
-            difference()
+        difference()
+        {
+            union()
             {
-                union()
-                {
-                    base_shell() {
-                        highlight() recolor("red") attach(LEFT, CENTER) sphere(r=4);
-                    }
-                    shelf() {
-                        highlight() recolor("green") attach(TOP, CENTER) sphere(r=4);
-                    }
-                }
-                cutouts();
+                frame() select($children, 0);  // First child goes to frame
+                shelf() select($children, 1);  // Second child goes to shelf
             }
+            cutouts();
         }
         children();
     }
