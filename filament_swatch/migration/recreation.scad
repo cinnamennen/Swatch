@@ -1,6 +1,5 @@
-include <../../BOSL2/rounding.scad>
-include <../../BOSL2/std.scad>
-include <../core/swatch_constants.scad>
+include <BOSL2/rounding.scad>
+include <BOSL2/std.scad>
 
 // Debug settings
 $show_anchors = true;
@@ -63,7 +62,7 @@ module recreation()
     assert(INNER_WALL_OFFSET < BASE_WIDTH/2, "Inner wall offset too large for base width");
     assert(SHELF_THICKNESS < BASE_THICKNESS, "Shelf thickness must be less than base thickness");
     
-    eps = $preview ? PREVIEW_EPSILON : 0;  // Only apply epsilon in preview mode
+    eps = $preview ? EPSILON : 0;  // Only apply epsilon in preview mode
 
     // Base polygon points
     base = [[BASE_WIDTH - CHAMFER_RIGHT, 0],           // End of right chamfer
@@ -132,3 +131,6 @@ module recreation()
                         top = os_circle(r = -INNER_ROUNDOVER - eps));
     }
 }
+
+// Render when this file is the main file
+recreation(); 
