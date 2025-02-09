@@ -23,8 +23,7 @@ SEGMENTS = 32;            // Number of segments for curved surfaces
 CORNER_COMPENSATION = 3.5;  // Compensation for double-rounded corners (inner and outer path)
 
 // Technical parameters
-PREVIEW_EPSILON = 0.001;  // Tiny offset to prevent z-fighting in preview 
-P_EPSILON = $preview ? 0.001 : 0;
+P_EPSILON = $preview ? 0.01 : 0;
 // Point indices for the polygon paths
 // Base polygon points go clockwise from bottom right
 RIGHT_BOTTOM_CHAMFER = 0;
