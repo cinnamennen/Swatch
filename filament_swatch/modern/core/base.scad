@@ -11,6 +11,7 @@ include <vars.scad>
 module frame()
 {
     attachable(size=[BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS]) {
+        down(BASE_THICKNESS / 2)  // Center in Z axis
         difference()
         {
             // Outer frame
@@ -42,6 +43,7 @@ module shelf()
     z_pos = SHELF_THICKNESS / 2;
 
     attachable(size=[shelf_width, shelf_height, SHELF_THICKNESS]) {
+        down(BASE_THICKNESS / 2)  // Center in Z axis
         union() {
             // Main shelf
             translate([ left_edge_x + shelf_width / 2, center_y, z_pos ])
@@ -60,13 +62,16 @@ module shelf()
  */
 module cutouts()
 {
-    // Handle cutout
-    down(P_EPSILON) offset_sweep(path = get_rounded_handle_path(), height = BASE_THICKNESS,
-                                 bottom = os_circle(r = -INNER_ROUNDOVER), top = os_circle(r = -INNER_ROUNDOVER),
-                                 check_valid = false);
-    // Top inner cutout
-    up(SHELF_THICKNESS) up(P_EPSILON) offset_sweep(get_rounded_inner_path(), height = BASE_THICKNESS - SHELF_THICKNESS,
-                                                   top = os_circle(r = -INNER_ROUNDOVER), check_valid = false);
+    down(BASE_THICKNESS / 2)  // Center in Z axis
+    {
+        // Handle cutout
+        down(P_EPSILON) offset_sweep(path = get_rounded_handle_path(), height = BASE_THICKNESS,
+                                     bottom = os_circle(r = -INNER_ROUNDOVER), top = os_circle(r = -INNER_ROUNDOVER),
+                                     check_valid = false);
+        // Top inner cutout
+        up(SHELF_THICKNESS) up(P_EPSILON) offset_sweep(get_rounded_inner_path(), height = BASE_THICKNESS - SHELF_THICKNESS,
+                                                       top = os_circle(r = -INNER_ROUNDOVER), check_valid = false);
+    }
 }
 
 /**
@@ -83,13 +88,12 @@ module base(anchor = CENTER, spin = 0, orient = UP)
     // Make the base attachable
     attachable(anchor, spin, orient, size = [ BASE_WIDTH, BASE_HEIGHT, BASE_THICKNESS ])
     {
-        down(BASE_THICKNESS / 2) // Center in Z axis
         difference()
         {
             union()
             {
-                frame() select($children, 0);  // First child goes to frame
-                shelf() select($children, 1);  // Second child goes to shelf
+                frame();
+                shelf();
             }
             cutouts();
         }

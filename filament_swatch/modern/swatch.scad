@@ -7,24 +7,22 @@ include <core/base.scad>
 include <features/circles.scad>
 
 // Wrapper modules to group children
-module frame_attachments() {
-    highlight() recolor("red") 
-        attach(LEFT, CENTER) sphere(r=4);
-    highlight() recolor("blue") 
-        attach(RIGHT, CENTER) sphere(r=4);
+module frame_attachments()
+{
+    recolor("red") attach(LEFT, CENTER) sphere(r = 4);
+    recolor("blue") attach(RIGHT, CENTER) sphere(r = 4);
 }
 
-module shelf_attachments() {
-    highlight() recolor("green") 
-        attach(TOP, CENTER) sphere(r=4);
-    highlight() recolor("yellow") 
-        attach(BOTTOM, CENTER) sphere(r=4);
+module shelf_attachments()
+{
+    recolor("green") attach(TOP, CENTER) sphere(r = 4);
+    recolor("yellow") attach(BOTTOM, CENTER) sphere(r = 4);
 }
 
 module create_swatch()
 {
-    recolor("SteelBlue")
-    base() {
+    recolor("SteelBlue") base()
+    {
         frame_attachments();
         shelf_attachments();
     }
