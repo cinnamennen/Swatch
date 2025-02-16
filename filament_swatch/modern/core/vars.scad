@@ -1,5 +1,3 @@
-
-
 // Base dimensions - these are used across multiple components
 BASE_WIDTH = 84.5;
 BASE_HEIGHT = 37;
@@ -7,7 +5,7 @@ BASE_THICKNESS = 3.31;
 
 // Wall and shelf parameters - these might be needed by other components
 INNER_WALL_OFFSET = 3;    // How far the inner wall is inset from the outer wall
-SHELF_THICKNESS = 2;      // Height of the left shelf
+SHELF_THICKNESS = 2;      // Height of the shelf platform
 LEFT_SHELF_OFFSET = 5;    // How far the shelf extends to the left
 
 // Chamfer dimensions - might be used for consistent styling
@@ -35,15 +33,12 @@ LEFT_TOP_CORNER = 5;      // Also used for shelf extension
 LEFT_BOTTOM_CORNER = 6;   // Also used for shelf extension
 LEFT_BOTTOM_CHAMFER = 7;
 
-// Handle points (subset of base polygon)
-HANDLE_TOP = LEFT_TOP_CHAMFER;
-HANDLE_TOP_CORNER = LEFT_TOP_CORNER;
-HANDLE_BOTTOM_CORNER = LEFT_BOTTOM_CORNER;
-HANDLE_BOTTOM = LEFT_BOTTOM_CHAMFER; 
 
 
 assert(BASE_WIDTH > 0, "Base width must be positive");
 assert(BASE_HEIGHT > 0, "Base height must be positive");
 assert(BASE_THICKNESS > 0, "Base thickness must be positive");
 assert(INNER_WALL_OFFSET < BASE_WIDTH / 2, "Inner wall offset too large for base width");
+assert(SHELF_THICKNESS > 0, "Shelf thickness must be positive");
 assert(SHELF_THICKNESS < BASE_THICKNESS, "Shelf thickness must be less than base thickness");
+assert(LEFT_SHELF_OFFSET >= 0, "Left shelf offset must be non-negative");

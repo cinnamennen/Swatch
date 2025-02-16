@@ -9,7 +9,8 @@ TEST_CIRCLE_SPACING = 2;
 // Create all circle test features
 module create_circle_tests() {
     for (i = [0:6]) {
-        left()
+        left(SHELF_WIDTH/2)
+        back(SHELF_HEIGHT/2)
         right(i * (TEST_CIRCLE_RADIUS * 2 + TEST_CIRCLE_SPACING))
         tag("remove") 
             attach(TOP)
