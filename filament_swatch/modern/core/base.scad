@@ -13,7 +13,7 @@ module base()
         union()
         {
             frame() if ($children > 0) children(0);
-            shelf() show_anchors(s=5) if ($children > 1) children(1);
+            shelf() if ($children > 1) children(1);
         }
          tag("remove") handle();
     }

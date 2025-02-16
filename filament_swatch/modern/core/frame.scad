@@ -23,9 +23,9 @@ module frame()
                                check_valid = false);
                 
                 // Top roundover
-                up(SHELF_THICKNESS)  // Cut down from shelf level
+                up(SHELF_THICKNESS - P_EPSILON)  // Slightly lower to ensure clean cut
                     offset_sweep(ROUNDED_INNER_PATH, 
-                               height = BASE_THICKNESS - SHELF_THICKNESS + P_EPSILON,
+                               height = BASE_THICKNESS - SHELF_THICKNESS + 2*P_EPSILON,  // Extend slightly more
                                top = os_circle(r = -INNER_ROUNDOVER), 
                                check_valid = false);
             }
