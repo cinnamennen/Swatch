@@ -42,7 +42,7 @@ module frame()
 /**
  * Creates the left side shelf extension
  */
-module shelf()
+module shelf(anchor=CENTER, spin=0, orient=TOP)
 {
     inner_path = get_inner_path();
 
@@ -55,23 +55,25 @@ module shelf()
     shelf_height = abs(top_y - bottom_y);
     center_y = (top_y + bottom_y) / 2;
     center_x = left_edge_x + shelf_width / 2;
-    z_pos = SHELF_THICKNESS / 2;
 
-    move([ center_x, center_y, 0 ]) // Position the entire shelf
-        attachable(size = [ shelf_width, shelf_height, SHELF_THICKNESS ])
-    {
-        down(BASE_THICKNESS / 2)
-        {
-            // Main shelf
-            up(z_pos) cuboid([ shelf_width, shelf_height, SHELF_THICKNESS - P_EPSILON ], anchor = CENTER);
-
-            // 1mm extension
-            left(shelf_width / 2 + 0.5) up(z_pos)
-                cuboid([ 1, shelf_height, SHELF_THICKNESS - P_EPSILON ], anchor = CENTER);
+    right(center_x)
+    back(center_y)
+    down(BASE_THICKNESS / 2)
+    up(SHELF_THICKNESS / 2)
+        attachable(size=[shelf_width, shelf_height, SHELF_THICKNESS - P_EPSILON], 
+                  anchor=anchor, spin=spin, orient=orient) {
+                    tag_scope() diff()
+            // First child: the shape to manage
+            
+                {
+                    cuboid([shelf_width, shelf_height, SHELF_THICKNESS - P_EPSILON], anchor=CENTER);
+                    left(shelf_width/2 + 0.5)
+                        cuboid([1, shelf_height, SHELF_THICKNESS - P_EPSILON], anchor=CENTER);
+                }
+                children(0);
+            
         }
-
-        children();
-    }
+    
 }
 
 /**

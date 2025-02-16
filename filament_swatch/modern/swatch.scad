@@ -19,6 +19,7 @@ module frame_attachments()
 module shelf_attachments()
 {
     // shelf_cylinders();
+    create_circle_tests();
     // recolor("green") attach(TOP, CENTER) sphere(r = 4);
     // recolor("yellow") attach(BOTTOM, CENTER) sphere(r = 4);
 }
