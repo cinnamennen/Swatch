@@ -21,4 +21,17 @@ module create_circle_tests() {
                 right(i * (TEST_CIRCLE_RADIUS * 2 + TEST_CIRCLE_SPACING))
                     cyl(d=TEST_CIRCLE_RADIUS*2, h=BASE_THICKNESS*2 + P_EPSILON, anchor=TOP, $fn=SEGMENTS);
     }
+    
+    tag("keep") 
+        attach(TOP)
+            left(SHELF_WIDTH/2 - TEST_CIRCLE_RADIUS * 2)
+            back(SHELF_HEIGHT/2 - TEST_CIRCLE_RADIUS)
+            fwd(.5)
+            down(SHELF_THICKNESS)
+            up(P_EPSILON)
+            right(1 * (TEST_CIRCLE_RADIUS * 2 + TEST_CIRCLE_SPACING))
+                intersection() {
+                    sphere(r=TEST_CIRCLE_RADIUS, $fn=SEGMENTS);
+                    up(TEST_CIRCLE_RADIUS) cube(TEST_CIRCLE_RADIUS*2, center=true);
+                }
 }
