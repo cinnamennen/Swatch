@@ -1,17 +1,36 @@
+include <BOSL2/std.scad>
 include <core/base.scad>
-include <features/shelf.scad>
-include <features/frame.scad>
+include <core/frame.scad>
+include <core/handle.scad>
+include <core/shelf.scad>
 include <features/text/side.scad>
 include <features/text/top.scad>
+include <features/geometry.scad>
+include <features/thickness.scad>
+include <features/overhang.scad>
+include <features/walls.scad>
 
-module blank(){}
+module blank() {}
 module swatch()
 {
-  base()
+  recolor("SteelBlue") diff("remove")
   {
-    frame_features();
-    blank();
-    // shelf_features();
+    union()
+    {
+      frame()
+      {
+        overhang();
+        walls();
+        side();
+        top();
+      }
+      shelf()
+      {
+        geometry();
+        thickness();
+      }
+    }
+    tag("remove") handle();
   }
 }
 

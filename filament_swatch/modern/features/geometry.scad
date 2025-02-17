@@ -10,7 +10,7 @@ CIRCLE_SPACING = (CIRCLE_DIAMETER + CIRCLE_MARGIN);
 CIRCLE_TOP_MARGIN = .5;
 
 // Create all circle test features
-module geometry_features()
+module geometry()
 {
   $fn = SEGMENTS;  // Set segments for all shapes in this module
   total_width = 7 * CIRCLE_SPACING;

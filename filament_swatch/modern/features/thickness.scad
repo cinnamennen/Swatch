@@ -1,7 +1,7 @@
 include <../common/vars.scad>
 include <../common/text.scad>
 
-module thickness_features()
+module thickness()
 {
   DEPTHS = [ -.6, .2, .4, .6, .8, 1, 1.6 ];
   attach(TOP, BOTTOM, align = FRONT) back(1)

@@ -2,7 +2,7 @@ include <../common/paths.scad>
 include <../common/vars.scad>
 include <BOSL2/std.scad>
 
-module walls_features()
+module walls()
 {
   WALL_HEIGHT = BASE_THICKNESS + P_EPSILON;
 
