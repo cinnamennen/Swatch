@@ -4,6 +4,7 @@ include <core/handle.scad>
 include <core/shelf.scad>
 include <features/geometry.scad>
 include <features/overhang.scad>
+include <features/text/front.scad>
 include <features/text/side.scad>
 include <features/text/top.scad>
 include <features/thickness.scad>
@@ -18,15 +19,16 @@ module swatch()
     {
       frame()
       {
-        overhang();
-        walls();
-        side();
-        top();
+        // overhang();
+        // walls();
+        // side();
+        // top();
       }
       shelf()
       {
         geometry();
         thickness();
+        front();
       }
     }
     tag("remove") handle();

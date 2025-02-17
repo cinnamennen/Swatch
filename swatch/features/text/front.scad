@@ -2,18 +2,46 @@ include <../../common/paths.scad>
 include <../../common/text.scad>
 include <../../common/vars.scad>
 
+edge_anchor = RIGHT + TOP;
+top_anchor = edge_anchor;
+bottom_anchor = edge_anchor;
+top_text_ratio = 1 / 3;
+bottom_text_ratio = (1 - top_text_ratio) / 2;
+thickness_size = 12;
+margin = .5;
+available_height = SHELF_HEIGHT - thickness_size - margin;
+text_margins = 1;
+available_height_for_text = available_height - (text_margins * 2);
+
+top_text_size = top_text_ratio * available_height_for_text;
+bottom_text_size = bottom_text_ratio * available_height_for_text;
+
+text_depth = 1.5;
 module front()
 {
-  slide = (SHELF_HEIGHT / 2) - 1;
-  spacing = 1.3;
-  attach(RIGHT) tag("remove")
+  attach(TOP) right(SHELF_WIDTH / 2) left(1) back(thickness_size / 2) fwd(margin) up(P_EPSILON)
+    tag("remove")
   {
-    right(slide) up(P_EPSILON)
-      text3d(S_HEIGHT, h = INNER_WALL_OFFSET / 2, atype = "ycenter", spin = 180, anchor = LEFT + TOP,
-             size = SIDE_SIZE, font = TEXT_FONT_HEAVY, spacing = spacing, $fn = 32);
+    back(available_height / 2)
+    fwd(top_text_size / 2)
+    {
+      write(MATERIAL, top_text_size, top_anchor);
+    }
+    fwd(0)
+    {
+      write(BRAND, bottom_text_size, edge_anchor, "ycenter");
+    }
 
-    left(slide) up(P_EPSILON)
-      text3d(S_TEMP, h = INNER_WALL_OFFSET / 2, atype = "ycenter", spin = 180, anchor = RIGHT + TOP,
-             size = SIDE_SIZE, font = TEXT_FONT_HEAVY, spacing = spacing, $fn = 32);
+    fwd(available_height / 2)
+    back(bottom_text_size / 2)
+    {
+      write(COLOR, bottom_text_size, bottom_anchor);
+    }
   }
+}
+
+module write(input, text_size, anchor, atype = "ycenter")
+{
+  text3d(input, h = text_depth, size = text_size * .72, anchor = anchor, $fn = 32, font = TEXT_FONT,
+         atype = atype);
 }
