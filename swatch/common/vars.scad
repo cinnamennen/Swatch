@@ -5,7 +5,7 @@ BASE_THICKNESS = 3.31;
 
 // Wall and shelf parameters - these might be needed by other components
 INNER_WALL_OFFSET = 3;  // How far the inner wall is inset from the outer wall
-SHELF_THICKNESS = 2;    // Height of the shelf platform
+SHELF_THICKNESS = 2.15;    // Height of the shelf platform
 LEFT_SHELF_OFFSET = 5;  // How far the shelf extends to the left
 
 // Chamfer dimensions - might be used for consistent styling

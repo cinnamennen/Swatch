@@ -19,10 +19,10 @@ module swatch()
     {
       frame()
       {
-        // overhang();
-        // walls();
-        // side();
-        // top();
+        overhang();
+        walls();
+        side();
+        top();
       }
       shelf()
       {
