@@ -40,3 +40,5 @@ assert(INNER_WALL_OFFSET < BASE_WIDTH / 2, "Inner wall offset too large for base
 assert(SHELF_THICKNESS > 0, "Shelf thickness must be positive");
 assert(SHELF_THICKNESS < BASE_THICKNESS, "Shelf thickness must be less than base thickness");
 assert(LEFT_SHELF_OFFSET >= 0, "Left shelf offset must be non-negative");
+
+EDGE_FEATURE_DEPTH = INNER_WALL_OFFSET - .5;

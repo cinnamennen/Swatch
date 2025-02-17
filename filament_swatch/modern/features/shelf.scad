@@ -1,4 +1,8 @@
 include <BOSL2/std.scad>
 include <geometry.scad>
-
-module shelf_features() { geometry_features(); }
+include <thickness.scad>
+module shelf_features()
+{
+//   geometry_features();
+  // thickness_features();
+}
