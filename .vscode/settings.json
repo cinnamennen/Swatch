@@ -2,5 +2,6 @@
     "scad-lsp.fmtExePath": "C:\\Program Files\\LLVM\\bin\\clang-format.exe",
     "scad-lsp.searchPaths": "C:\\Users\\ion\\Documents\\OpenSCAD\\libraries",
     "scad-lsp.launchPath": "C:\\Program Files\\OpenSCAD (Nightly)\\openscad.exe",
-    "scad-lsp.fmtStyle": "file"
+    "scad-lsp.fmtStyle": "file",
+    "files.autoSave": "afterDelay"
 }
