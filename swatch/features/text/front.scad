@@ -22,26 +22,14 @@ module front()
   attach(TOP) right(SHELF_WIDTH / 2) left(1) back(thickness_size / 2) fwd(margin) up(P_EPSILON)
     tag("remove")
   {
-    back(available_height / 2)
-    fwd(top_text_size / 2)
-    {
-      write(MATERIAL, top_text_size, top_anchor);
-    }
-    fwd(0)
-    {
-      write(BRAND, bottom_text_size, edge_anchor, "ycenter");
-    }
-
-    fwd(available_height / 2)
-    back(bottom_text_size / 2)
-    {
-      write(COLOR, bottom_text_size, bottom_anchor);
-    }
+    back(available_height / 2) fwd(top_text_size / 2) write(MATERIAL, top_text_size);
+    write(BRAND, bottom_text_size);
+    fwd(available_height / 2) back(bottom_text_size / 2) write(COLOR, bottom_text_size);
   }
 }
 
-module write(input, text_size, anchor, atype = "ycenter")
+module write(input, text_size)
 {
-  text3d(input, h = text_depth, size = text_size * .72, anchor = anchor, $fn = 32, font = TEXT_FONT,
-         atype = atype);
+  text3d(input, h = text_depth, size = text_size * .72, anchor = RIGHT + TOP, $fn = 32, font = TEXT_FONT,
+         atype = "ycenter");
 }
