@@ -1,5 +1,4 @@
 include <BOSL2/std.scad>
-include <core/base.scad>
 include <core/frame.scad>
 include <core/handle.scad>
 include <core/shelf.scad>
