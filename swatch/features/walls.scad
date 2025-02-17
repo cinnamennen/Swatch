@@ -6,7 +6,7 @@ module walls()
 {
   WALL_HEIGHT = BASE_THICKNESS + P_EPSILON;
 
-  tag("remove") attach(FRONT, LEFT) right(INNER_WIDTH / 2) down(EDGE_FEATURE_DEPTH/2) up(P_EPSILON)
+  tag("remove") attach(FRONT, LEFT) right(INNER_WIDTH / 2) down(EDGE_FEATURE_DEPTH / 2) up(P_EPSILON)
     yrot(-90) difference()
   {
     cube([ 8.6, EDGE_FEATURE_DEPTH, WALL_HEIGHT ]);

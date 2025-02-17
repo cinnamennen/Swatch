@@ -3,11 +3,11 @@ include <core/base.scad>
 include <core/frame.scad>
 include <core/handle.scad>
 include <core/shelf.scad>
+include <features/geometry.scad>
+include <features/overhang.scad>
 include <features/text/side.scad>
 include <features/text/top.scad>
-include <features/geometry.scad>
 include <features/thickness.scad>
-include <features/overhang.scad>
 include <features/walls.scad>
 
 module blank() {}

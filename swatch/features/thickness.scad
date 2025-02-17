@@ -1,5 +1,5 @@
-include <../common/vars.scad>
 include <../common/text.scad>
+include <../common/vars.scad>
 
 module thickness()
 {
