@@ -1,11 +1,11 @@
 include <vars.scad>
 
 MATERIAL = "PLA";
-BRAND = "Prusament";
-COLOR = "Oh My Gold";
+BRAND = "Atomic Filament";
+COLOR = "Bright White";
 
-HEIGHT = 0.2;
-TEMP = 230;
+HEIGHT = .2;
+TEMP = 225;
 
 N_HEIGHT = is_num(HEIGHT) ? HEIGHT : parse_num(HEIGHT);
 N_TEMP = is_num(TEMP) ? TEMP : parse_num(TEMP);
