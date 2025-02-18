@@ -1,0 +1,38 @@
+{
+  "printer_profiles": {
+    "MK4S": {
+      "print_profile": "0.20mm QUALITY",
+      "profile_suffixes": ["@MK4S", ""]
+    },
+    "MK3S": {
+      "print_profile": "0.20mm QUALITY",
+      "profile_suffixes": ["@MK3.5", ""]
+    },
+    "MINIIS": {
+      "print_profile": "0.20mm QUALITY",
+      "profile_suffixes": ["@MINIIS", "@MINI", ""]
+    },
+    "COREONE": {
+      "print_profile": "0.20mm QUALITY",
+      "profile_suffixes": ["@COREONE", ""]
+    },
+    "XLIS": {
+      "print_profile": "0.20mm QUALITY",
+      "profile_suffixes": ["@XLIS", "@XL", ""]
+    }
+  },
+  "material_profiles": {
+    "defaults": {
+      "PLA": "Generic PLA",
+      "PETG": "Generic PETG",
+      "ABS": "Generic ABS"
+    },
+    "brand_overrides": {
+      "Prusament": {
+        "PLA": "Prusament PLA",
+        "PETG": "Prusament PETG",
+        "ASA": "Prusament ASA"
+      }
+    }
+  }
+} 

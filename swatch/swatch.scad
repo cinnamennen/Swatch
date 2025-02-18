@@ -9,29 +9,39 @@ include <features/text/side.scad>
 include <features/text/top.scad>
 include <features/thickness.scad>
 include <features/walls.scad>
+include <common/validation.scad>
+
+// Default values for parameters
+MATERIAL = "PLA";
+BRAND = "Generic";
+COLOR = "Natural";
+LAYER_HEIGHT = 0.2;
 
 module blank() {}
+
 module swatch()
 {
-  recolor("SteelBlue") diff("remove")
-  {
-    union()
+  validate_swatch_params(MATERIAL, BRAND, COLOR, LAYER_HEIGHT) {
+    recolor("SteelBlue") diff("remove")
     {
-      frame()
+      union()
       {
-        overhang();
-        walls();
-        side();
-        top();
+        frame()
+        {
+          overhang();
+          walls();
+          side();
+          top();
+        }
+        shelf()
+        {
+          geometry();
+          thickness();
+          front();
+        }
       }
-      shelf()
-      {
-        geometry();
-        thickness();
-        front();
-      }
+      tag("remove") handle();
     }
-    tag("remove") handle();
   }
 }
 
