@@ -1,3 +1,6 @@
 [submodule "BOSL2"]
 	path = BOSL2
 	url = https://github.com/revarbat/BOSL2.git
+[submodule "slicer-profiles"]
+	path = slicer-profiles
+	url = https://github.com/prusa3d/PrusaSlicer-settings-prusa-fff.git
