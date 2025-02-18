@@ -205,6 +205,13 @@ To ensure proper model generation, text fields have the following length limits:
    - Verify PrusaSlicer version (2.6.0 or later recommended)
    - Check if the print profile exists for your printer
    - Ensure the model has the ironing modifier correctly applied
+   - For validation issues, check that profile names match exactly with the INI file format:
+     ```ini
+     printer:Original Prusa MK4S
+     print:0.20mm QUALITY @MK4S
+     filament:Prusament PLA @MK4S
+     ```
+   - Note: PrusaSlicer validation is temporarily disabled while investigating correct profile names
 
 ## Progress Tracking
 
@@ -222,6 +229,7 @@ To ensure proper model generation, text fields have the following length limits:
 - Preview image generation
 - Material-specific modifier settings
 - MVP Testing: Prusament PLA on MK4S with ironing modifiers
+- PrusaSlicer validation: Investigating correct profile names and CLI options for validation step
 
 ### MVP Testing
 
@@ -233,35 +241,19 @@ Currently focusing on testing the following configuration:
 To test the MVP configuration:
 
 ```bash
-# 1. Generate 3MF for Prusament PLA
-python3 scripts/get_material_config.py "Prusament PLA" MK4S > material.json
-
-# 2. Generate base model
-openscad -o test_prusament_pla.3mf swatch/swatch.scad \
-        -D "MATERIAL=\"PLA\"" \
-        -D "BRAND=\"Prusament\"" \
-        -D "COLOR=\"Galaxy Black\"" \
-        -D "NOZZLE_TEMP=$(jq -r .temperature material.json)"
-
-# 3. Add ironing modifier
-python3 scripts/modify_3mf.py test_prusament_pla.3mf
-
-# 4. Slice with PrusaSlicer
-prusa-slicer --printer "Original Prusa MK4S" \
-             --filament "Prusament PLA" \
-             --print "0.20mm QUALITY MK4S" \
-             --export-gcode \
-             --output test_prusament_pla_mk4s.gcode \
-             test_prusament_pla.3mf
+# Generate 3MF for Prusament PLA
+python3 scripts/generate_3mf.py "Prusament PLA" "Prusament" "Galaxy Black" "MK4S"
 ```
 
-The ironing modifier is applied to specific surfaces of the swatch to achieve a glossy finish. This is currently being tested and refined for optimal results.
+Note: The script will generate the 3MF file with ironing modifiers but currently skips PrusaSlicer validation.
+This is temporary while we investigate the correct profile names and CLI options for validation.
 
 ### Todo 📝
 - Add test cases for model generation
 - Implement error reporting in GitHub Actions
 - Add support for custom material profiles
 - Improve error messages and validation
+- Fix PrusaSlicer validation step with correct profile names
 
 ## Contributing
 

@@ -22,7 +22,7 @@ module blank() {}
 module swatch()
 {
   validate_swatch_params(MATERIAL, BRAND, COLOR, LAYER_HEIGHT) {
-    recolor("SteelBlue") diff("remove")
+    diff("remove")
     {
       union()
       {
