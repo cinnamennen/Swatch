@@ -1,9 +1,4 @@
 ---
-description: 
-globs: 
-alwaysApply: false
----
----
 description: Safe Terminal Commands
 globs: 
 alwaysApply: true

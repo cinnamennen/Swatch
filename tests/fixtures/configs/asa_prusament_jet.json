@@ -1,0 +1,9 @@
+{
+    "material": "ASA",
+    "brand": "Prusament",
+    "color": "Jet Black",
+    "nozzle_temp": 260,
+    "printer": "Original Prusa MK4S",
+    "print_profile": "0.20mm QUALITY MK4S",
+    "filament_profile": "Prusament ASA"
+} 

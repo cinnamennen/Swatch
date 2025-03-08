@@ -1,0 +1,9 @@
+{
+    "material": "PLA",
+    "brand": "Prusament",
+    "color": "Galaxy Black",
+    "nozzle_temp": 215,
+    "printer": "Original Prusa MK4S",
+    "print_profile": "0.20mm QUALITY MK4S",
+    "filament_profile": "Prusament PLA"
+} 

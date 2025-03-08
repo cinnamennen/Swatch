@@ -1,9 +1,13 @@
-# Build outputs
+# Test and validation directories
+tests/tmp/
+tests/validation/
 output/
-*.gcode
+
+# Temporary files
 *.3mf
-*.stl
-*.amf
+!tests/fixtures/**/*.3mf
+*.gcode
+!tests/fixtures/**/*.gcode
 
 # Python
 __pycache__/
@@ -31,12 +35,11 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
-# Temporary files
+# Temporary directories
 tmp/
 temp/
-*.tmp
-*.bak
-*.log
+.tmp/
+.temp/
 
 # Local configuration
 config.local.ini

@@ -6,7 +6,9 @@ import subprocess
 import platform
 from pathlib import Path
 from get_material_config import get_filament_config, get_latest_config_file
-from modify_3mf import add_ironing_modifier
+import re
+import traceback
+import argparse
 
 def find_openscad():
     """Find OpenSCAD executable with preference for nightly builds."""
@@ -175,133 +177,108 @@ def find_prusaslicer():
         print(f"  - {path}", file=sys.stderr)
     return None
 
-def generate_3mf(material, brand, color, printer_model):
-    """Generate a 3MF file for the given material configuration with ironing modifiers."""
+def generate_3mf(material, brand, color, printer_model, print_profile=None, temperature=None, layer_height=None):
+    """Generate a 3MF file for the given material configuration.
+    
+    Args:
+        material: Material type (e.g., "PLA", "PETG")
+        brand: Brand name (e.g., "Prusament", "Generic")
+        color: Color name (e.g., "Galaxy Black", "Natural")
+        printer_model: Printer model (e.g., "MK4S", "MK3S+")
+        print_profile: Print profile name (e.g., "0.20mm QUALITY MK4S")
+        temperature: Optional temperature override
+        layer_height: Optional layer height override
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
     try:
-        # Find OpenSCAD executable
-        print("Looking for OpenSCAD installation...", file=sys.stderr)
+        # Get paths to required executables
         openscad_path = find_openscad()
-        if not openscad_path:
-            print("\nError: OpenSCAD not found. Please:", file=sys.stderr)
-            print("1. Install OpenSCAD from https://openscad.org/downloads.html", file=sys.stderr)
-            print("2. Make sure it's installed in a standard location or added to PATH", file=sys.stderr)
-            print("3. For best results, use the latest nightly build", file=sys.stderr)
-            return False
-        
-        print(f"\nUsing OpenSCAD: {openscad_path}")
-        
-        # Find PrusaSlicer executable
-        print("\nLooking for PrusaSlicer installation...", file=sys.stderr)
         prusaslicer_path = find_prusaslicer()
-        if not prusaslicer_path:
-            print("\nError: PrusaSlicer not found. Please:", file=sys.stderr)
-            print("1. Install PrusaSlicer from https://www.prusa3d.com/prusaslicer/", file=sys.stderr)
-            print("2. Make sure it's installed in a standard location or added to PATH", file=sys.stderr)
+        
+        if not openscad_path or not prusaslicer_path:
             return False
             
-        print(f"\nUsing PrusaSlicer: {prusaslicer_path}")
+        # Create output directories if they don't exist
+        Path("output/3mf").mkdir(parents=True, exist_ok=True)
+        Path("output/gcode").mkdir(parents=True, exist_ok=True)
         
         # Get material configuration
         config = get_filament_config(material, printer_model)
         if not config:
-            print(f"Error: Could not get material config for {material} on {printer_model}", file=sys.stderr)
+            print(f"Error: Could not get configuration for {material} on {printer_model}", file=sys.stderr)
             return False
-
-        # Generate base filename
-        base_name = f"{brand}_{material}_{color}".replace(" ", "_")
-        output_dir = Path("output/3mf")
-        output_dir.mkdir(parents=True, exist_ok=True)
+            
+        # Override config with provided values
+        if temperature:
+            config['temperature'] = temperature
+            
+        if layer_height:
+            config['layer_height'] = layer_height
+            
+        # Create safe filename with printer model
+        safe_name = f"{brand}_{material}_{color}".replace(" ", "_")
+        safe_name = re.sub(r'[^a-zA-Z0-9_-]', '', safe_name)
         
-        # First generate STL to validate the mesh
-        stl_file = output_dir / f"{base_name}.stl"
-        print(f"\nGenerating STL to validate mesh...", file=sys.stderr)
-        stl_cmd = [
+        # Create printer-specific name suffix
+        printer_suffix = re.sub(r'[^a-zA-Z0-9_-]', '', printer_model)
+        
+        # For print profile specific output, extract quality/draft
+        profile_suffix = ""
+        if print_profile:
+            match = re.search(r'(QUALITY|DRAFT)', print_profile)
+            if match:
+                profile_suffix = f"_{match.group(1).lower()}"
+        
+        # Generate base 3MF file
+        base_3mf = Path(f"output/3mf/{safe_name}.3mf")
+        
+        print(f"\nGenerating base 3MF...", file=sys.stderr)
+        base_cmd = [
             str(openscad_path),
-            "-o", str(stl_file),
-            "--export-format", "stl",
+            "-o", str(base_3mf),
+            "--export-format", "3mf",
             "--check-parameters", "true",
             "--check-parameter-ranges", "true",
             "--hardwarnings",
-            "--backend", "manifold",
             str(Path("swatch/swatch.scad").resolve()),  # Use absolute path
-            "-D", f'MATERIAL="{material}"',  # Escape quotes for OpenSCAD
+            "-D", f'MATERIAL="{material}"',
             "-D", f'BRAND="{brand}"',
             "-D", f'COLOR="{color}"',
             "-D", f"NOZZLE_TEMP={config.get('temperature', 215)}",
             "-D", f"LAYER_HEIGHT={config.get('layer_height', 0.2)}"
         ]
         
-        print(f"Running OpenSCAD STL generation: {' '.join(stl_cmd)}", file=sys.stderr)
-        result = subprocess.run(stl_cmd, capture_output=True, text=True)
+        print(f"Running OpenSCAD: {' '.join(base_cmd)}", file=sys.stderr)
+        result = subprocess.run(base_cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            print(f"Error generating STL:", file=sys.stderr)
+            print(f"Error generating base 3MF:", file=sys.stderr)
             print(f"Command output:", file=sys.stderr)
             print(result.stdout, file=sys.stderr)
             print(f"Command error:", file=sys.stderr)
             print(result.stderr, file=sys.stderr)
             return False
             
-        # Validate STL with PrusaSlicer
-        print(f"\nValidating STL with PrusaSlicer...", file=sys.stderr)
-        validate_stl_cmd = [
-            str(prusaslicer_path),
-            "--export-stl",
-            "--repair",
-            "--load", str(Path("slicer-profiles/PrusaResearch/2.1.11.ini")),
-            str(stl_file),
-            "--output", str(stl_file)
-        ]
+        # Generate printer-specific 3MF with ironing enabled
+        printer_3mf = Path(f"output/3mf/{safe_name}_{printer_suffix}{profile_suffix}.3mf")
         
-        print(f"Running PrusaSlicer STL validation: {' '.join(validate_stl_cmd)}", file=sys.stderr)
-        result = subprocess.run(validate_stl_cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"Error: STL validation failed:", file=sys.stderr)
-            print(f"Command output:", file=sys.stderr)
-            print(result.stdout, file=sys.stderr)
-            print(f"Command error:", file=sys.stderr)
-            print(result.stderr, file=sys.stderr)
-            return False
-            
-        # Now generate base 3MF file
-        base_3mf = output_dir / f"{base_name}.3mf"
-        print(f"\nGenerating base 3MF from validated STL...", file=sys.stderr)
-        convert_cmd = [
-            str(prusaslicer_path),
-            "--export-3mf",
-            "--repair",
-            "--load", str(Path("slicer-profiles/PrusaResearch/2.1.11.ini")),
-            str(stl_file),
-            "--output", str(base_3mf)
-        ]
-        
-        print(f"Running PrusaSlicer STL to 3MF conversion: {' '.join(convert_cmd)}", file=sys.stderr)
-        result = subprocess.run(convert_cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"Error converting STL to 3MF:", file=sys.stderr)
-            print(f"Command output:", file=sys.stderr)
-            print(result.stdout, file=sys.stderr)
-            print(f"Command error:", file=sys.stderr)
-            print(result.stderr, file=sys.stderr)
-            return False
-            
-        # Clean up STL file
-        stl_file.unlink()
-
-        # Generate printer-specific 3MF
-        printer_3mf = output_dir / f"{base_name}_{printer_model}.3mf"
-        if printer_3mf.exists():
-            printer_3mf.unlink()  # Remove existing file if it exists
-            
-        # Convert base 3MF to printer-specific 3MF
-        print(f"\nGenerating printer-specific 3MF...", file=sys.stderr)
+        print(f"\nGenerating printer-specific 3MF with ironing...", file=sys.stderr)
         printer_cmd = [
             str(prusaslicer_path),
             "--export-3mf",
             "--repair",
             "--load", str(Path("slicer-profiles/PrusaResearch/2.1.11.ini")),
+            "--print-settings", "ironing=1",
+            "--print-settings", "ironing_type=top",
+            "--print-settings", "ironing_flowrate=15",
             str(base_3mf),
             "--output", str(printer_3mf)
         ]
+        
+        # Add print profile if provided
+        if print_profile:
+            printer_cmd.extend(["--print", print_profile])
         
         print(f"Running PrusaSlicer printer-specific conversion: {' '.join(printer_cmd)}", file=sys.stderr)
         result = subprocess.run(printer_cmd, capture_output=True, text=True)
@@ -316,63 +293,50 @@ def generate_3mf(material, brand, color, printer_model):
         # Clean up base 3MF
         base_3mf.unlink()
             
-        # Add ironing modifier
-        print(f"\nAdding ironing modifier...", file=sys.stderr)
-        if not add_ironing_modifier(printer_3mf):
-            print("Error adding ironing modifier", file=sys.stderr)
-            return False
-            
-        # Verify the file still exists after modification
+        # Verify the file exists
         if not printer_3mf.exists():
-            print(f"Error: 3MF file disappeared after adding ironing modifier: {printer_3mf}", file=sys.stderr)
+            print(f"Error: 3MF file not found: {printer_3mf}", file=sys.stderr)
             return False
             
-        # Check file size after modification
+        # Check file size
         file_size = printer_3mf.stat().st_size
         if file_size == 0:
-            print(f"Error: 3MF file is empty after adding ironing modifier: {printer_3mf}", file=sys.stderr)
+            print(f"Error: 3MF file is empty: {printer_3mf}", file=sys.stderr)
             return False
             
-        print(f"3MF file size after modification: {file_size} bytes")
+        print(f"3MF file size: {file_size} bytes")
+        print(f"Generated 3MF file: {printer_3mf}")
             
-        # Final validation with PrusaSlicer
-        print(f"\nPerforming final validation...", file=sys.stderr)
-        validate_cmd = [
-            str(prusaslicer_path),
-            "--export-3mf",
-            "--repair",
-            "--load", str(Path("slicer-profiles/PrusaResearch/2.1.11.ini")),
-            str(printer_3mf),
-            "--output", str(printer_3mf)
-        ]
-        
-        print(f"Running PrusaSlicer validation: {' '.join(validate_cmd)}", file=sys.stderr)
-        result = subprocess.run(validate_cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"Error validating 3MF with PrusaSlicer:", file=sys.stderr)
-            print(f"Command output:", file=sys.stderr)
-            print(result.stdout, file=sys.stderr)
-            print(f"Command error:", file=sys.stderr)
-            print(result.stderr, file=sys.stderr)
-            return False
-            
-        print(f"Successfully validated and generated 3MF: {printer_3mf}")
         return True
-        
+            
     except Exception as e:
-        print(f"Error generating 3MF: {e}", file=sys.stderr)
+        print(f"Error: {str(e)}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         return False
 
+def parse_args():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description='Generate 3MF swatch models')
+    parser.add_argument('--material', required=True, help='Material type (e.g., "PLA", "PETG")')
+    parser.add_argument('--brand', required=True, help='Brand name (e.g., "Prusament", "Generic")')
+    parser.add_argument('--color', required=True, help='Color name (e.g., "Galaxy Black", "Natural")')
+    parser.add_argument('--printer', required=True, help='Printer model (e.g., "MK4S", "MK3S+")')
+    parser.add_argument('--profile', help='Print profile name (e.g., "0.20mm QUALITY MK4S")')
+    parser.add_argument('--temperature', type=float, help='Optional temperature override')
+    parser.add_argument('--layer-height', type=float, help='Optional layer height override')
+    
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print("Usage: generate_3mf.py <material> <brand> <color> <printer_model>", file=sys.stderr)
-        print("Example: generate_3mf.py 'Prusament PLA' Prusament 'Galaxy Black' MK4S", file=sys.stderr)
-        sys.exit(1)
+    args = parse_args()
     
-    material = sys.argv[1]
-    brand = sys.argv[2]
-    color = sys.argv[3]
-    printer_model = sys.argv[4]
-    
-    if not generate_3mf(material, brand, color, printer_model):
+    if not generate_3mf(
+        material=args.material,
+        brand=args.brand,
+        color=args.color,
+        printer_model=args.printer,
+        print_profile=args.profile,
+        temperature=args.temperature,
+        layer_height=args.layer_height
+    ):
         sys.exit(1) 

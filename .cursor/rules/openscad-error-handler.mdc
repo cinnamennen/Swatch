@@ -1,4 +1,9 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: OpenSCAD Error Handler
 globs: **/*.scad
 alwaysApply: false

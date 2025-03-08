@@ -1,158 +1,117 @@
-name: Generate Swatch Models
+name: Generate Swatches
 
 on:
   push:
-    branches: [ main ]
     paths:
-      - 'materials/**/*.csv'
-      - 'swatch/**/*.scad'
+      - 'materials/**'
+      - 'swatch/**'
+      - 'scripts/**'
       - '.github/workflows/generate-swatches.yml'
-      - 'scripts/**/*.py'
-      - 'printers/**/*.json'
-      - 'slicer-profiles/**/*.ini'
   workflow_dispatch:
 
 jobs:
-  generate-swatches:
+  generate:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install OpenSCAD
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openscad jq
-
-      - name: Install PrusaSlicer
-        run: |
-          wget https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.0/PrusaSlicer-2.6.0+linux-x64-GTK3-202307080851.tar.bz2
-          tar xf PrusaSlicer-2.6.0+linux-x64-GTK3-202307080851.tar.bz2
-          echo "$PWD/PrusaSlicer-2.6.0+linux-x64-GTK3-202307080851/bin" >> $GITHUB_PATH
-
-      - name: Generate Models
-        run: |
-          mkdir -p output/3mf output/gcode
-          chmod +x scripts/modify_3mf.py scripts/get_material_config.py
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openscad prusa-slicer jq
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Process materials
+      run: |
+        # Read each material CSV file
+        find materials -name "*.csv" -type f | while read -r csv_file; do
+          echo "Processing $csv_file..."
           
-          # Process each CSV file
-          for csv in materials/*.csv; do
-            while IFS=, read -r material brand color filament_profile; do
-              # Skip header
-              if [ "$material" = "Material" ]; then continue; fi
-              
-              # Clean up values and create safe filename
-              safe_name=$(echo "${brand}_${material}_${color}" | tr ' ' '_' | tr -dc '[:alnum:]_-')
-              
-              # Get material configuration
-              echo "Getting material config for $filament_profile..."
-              material_config=$(python3 scripts/get_material_config.py "$filament_profile")
-              if [ $? -ne 0 ]; then
-                echo "Error: Failed to get material config for $filament_profile"
-                exit 1
-              fi
-              
-              # Extract temperature from material config
-              temperature=$(echo "$material_config" | jq -r '.temperature')
-              
-              # Generate 3MF for each material
-              echo "Generating model for $safe_name..."
-              if ! openscad -o "output/3mf/${safe_name}.3mf" \
-                -D "MATERIAL=\"$material\"" \
-                -D "BRAND=\"$brand\"" \
-                -D "COLOR=\"$color\"" \
-                -D "NOZZLE_TEMP=$temperature" \
-                swatch/swatch.scad; then
-                echo "Error: Failed to generate model for $safe_name"
-                exit 1
-              fi
-              
-              # Add ironing modifier to 3MF
-              echo "Adding ironing modifier for $safe_name..."
-              if ! python3 scripts/modify_3mf.py "output/3mf/${safe_name}.3mf"; then
-                echo "Error: Failed to add ironing modifier for $safe_name"
-                exit 1
-              fi
-              
-              # Generate GCODE for each printer and profile
-              jq -c '.printers[]' printers/config.json | while read -r printer; do
-                printer_name=$(echo $printer | jq -r '.name')
-                printer_profile=$(echo $printer | jq -r '.profile')
-                
-                # Create safe printer name for filenames
-                safe_printer_name=$(echo "$printer_name" | tr ' ' '_' | tr -dc '[:alnum:]_-')
-                
-                # Process each print profile
-                echo $printer | jq -r '.print_profiles[]' | while read -r print_profile; do
-                  # Create safe profile name for filenames
-                  profile_type=$(echo "$print_profile" | grep -o 'QUALITY\|DRAFT')
-                  safe_profile_type=$(echo "$profile_type" | tr '[:upper:]' '[:lower:]')
-                  
-                  # Extract layer height from profile name (e.g., "0.20mm QUALITY" -> 0.20)
-                  layer_height=$(echo "$print_profile" | grep -o '[0-9]\.[0-9]\+' || echo "0.20")
-                  
-                  echo "Slicing model for $safe_name on $printer_name with $print_profile..."
-                  output_name="${safe_name}_${safe_printer_name}_${safe_profile_type}"
-                  
-                  # Generate material and layer height specific 3MF
-                  temp_3mf="output/3mf/${output_name}.3mf"
-                  if ! openscad -o "$temp_3mf" \
-                    -D "MATERIAL=\"$material\"" \
-                    -D "BRAND=\"$brand\"" \
-                    -D "COLOR=\"$color\"" \
-                    -D "NOZZLE_TEMP=$temperature" \
-                    -D "LAYER_HEIGHT=$layer_height" \
-                    swatch/swatch.scad; then
-                    echo "Error: Failed to generate model for $output_name"
-                    exit 1
-                  fi
-                  
-                  # Add ironing modifier
-                  if ! python3 scripts/modify_3mf.py "$temp_3mf"; then
-                    echo "Error: Failed to add ironing modifier for $output_name"
-                    exit 1
-                  fi
-                  
-                  # Slice the model
-                  if ! prusa-slicer \
-                    --printer "$printer_profile" \
-                    --filament "$filament_profile" \
-                    --print "$print_profile" \
-                    --export-gcode \
-                    --output "output/gcode/${output_name}.gcode" \
-                    "$temp_3mf"; then
-                    echo "Error: Failed to slice model for $output_name"
-                    exit 1
-                  fi
-                done
-              done
-            done < "$csv"
-          done
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            output/3mf/*.3mf
-            output/gcode/*.gcode
-          name: Swatch Models ${{ github.sha }}
-          tag_name: v${{ github.run_number }}
-          body: |
-            Automatically generated swatch models and gcode files
-            Commit: ${{ github.sha }}
+          # Skip header line and process each material
+          tail -n +2 "$csv_file" | while IFS=, read -r material brand color profile temperature; do
+            # Create safe name for filenames
+            safe_name="${brand}_${material}_${color}"
+            safe_name=$(echo "$safe_name" | tr ' ' '_' | tr -dc '[:alnum:]_-')
             
-            This release includes:
-            - Material-specific 3MF models with ironing modifiers
-            - Pre-sliced GCODE files for multiple printers:
-              - Original Prusa MK4 (0.20mm QUALITY, 0.28mm DRAFT)
-              - Original Prusa MK3S+ (0.20mm QUALITY, 0.28mm DRAFT)
-              - Original Prusa MINI+ (0.20mm QUALITY, 0.28mm DRAFT)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+            echo "Generating model for $safe_name..."
+            
+            # Process each printer configuration
+            jq -c '.printers[]' printers/config.json | while read -r printer; do
+              printer_name=$(echo $printer | jq -r '.name')
+              printer_profile=$(echo $printer | jq -r '.profile')
+              
+              # Create safe printer name for filenames
+              safe_printer_name=$(echo "$printer_name" | tr ' ' '_' | tr -dc '[:alnum:]_-')
+              
+              # Process each print profile
+              echo $printer | jq -r '.print_profiles[]' | while read -r print_profile; do
+                # Create safe profile name for filenames
+                profile_type=$(echo "$print_profile" | grep -o 'QUALITY\|DRAFT')
+                safe_profile_type=$(echo "$profile_type" | tr '[:upper:]' '[:lower:]')
+                
+                # Extract layer height from profile name (e.g., "0.20mm QUALITY" -> 0.20)
+                layer_height=$(echo "$print_profile" | grep -o '[0-9]\.[0-9]\+' || echo "0.20")
+                
+                echo "Slicing model for $safe_name on $printer_name with $print_profile..."
+                output_name="${safe_name}_${safe_printer_name}_${safe_profile_type}"
+                
+                # Generate 3MF with built-in ironing settings
+                if ! python3 scripts/generate_3mf.py \
+                  --material "$material" \
+                  --brand "$brand" \
+                  --color "$color" \
+                  --printer "$printer_name" \
+                  --profile "$print_profile" \
+                  --temperature "$temperature" \
+                  --layer-height "$layer_height"; then
+                  echo "Error: Failed to generate model for $output_name"
+                  exit 1
+                fi
+                
+                # Generate GCODE with ironing enabled
+                if ! prusa-slicer \
+                  --export-gcode \
+                  --load "slicer-profiles/PrusaResearch/2.1.11.ini" \
+                  --printer "$printer_profile" \
+                  --print "$print_profile" \
+                  --filament "$profile" \
+                  --print-settings "ironing=1" \
+                  --print-settings "ironing_type=top" \
+                  --print-settings "ironing_flowrate=15" \
+                  "output/3mf/${output_name}.3mf" \
+                  --output "output/gcode/${output_name}.gcode"; then
+                  echo "Error: Failed to generate GCODE for $output_name"
+                  exit 1
+                fi
+              done
+            done
+          done
+        done
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: swatches
+        path: |
+          output/3mf/*.3mf
+          output/gcode/*.gcode
+        
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          output/3mf/*.3mf
+          output/gcode/*.gcode
+        name: "Swatch Models ${{ github.sha }}"
+        tag_name: "v${{ github.run_number }}"
+        body: "Automatically generated swatch models"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

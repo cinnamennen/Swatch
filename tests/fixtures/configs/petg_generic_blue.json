@@ -1,0 +1,9 @@
+{
+    "material": "PETG",
+    "brand": "Generic",
+    "color": "Blue",
+    "nozzle_temp": 240,
+    "printer": "Original Prusa MK4S",
+    "print_profile": "0.20mm QUALITY MK4S",
+    "filament_profile": "Generic PETG"
+} 

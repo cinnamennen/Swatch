@@ -8,7 +8,7 @@ Automated system to generate and slice 3D printable filament swatches. Uses GitH
 - Automated model generation from material CSV files
 - Multi-printer GCODE generation
 - Uses official PrusaSlicer built-in material profiles
-- Automatic ironing modifier application
+- Automatic ironing of top surfaces via built-in PrusaSlicer settings
 - GitHub Actions automation for continuous deployment
 
 ## Project Structure
@@ -22,14 +22,135 @@ Automated system to generate and slice 3D printable filament swatches. Uses GitH
 └── .github/workflows/  # GitHub Actions workflow definitions
 ```
 
+## Pipeline Architecture
+
+The system is organized into two main phases:
+
+### Phase 1: Model Generation
+
+1. **Base Model Generation**
+   - Input: Material parameters (type, brand, color, temperature)
+   - Process: Generate 3D model geometry using OpenSCAD
+   - Output: 3MF file with material information embedded
+
+2. **Printer-Specific Configuration**
+   - Input: Base 3MF file
+   - Process: Apply printer-specific settings and enable ironing
+   - Output: Configured 3MF file ready for slicing
+
+### Phase 2: Slicing
+
+1. **GCODE Generation**
+   - Input: Configured 3MF file
+   - Process: Slice the model using PrusaSlicer with ironing enabled
+   - Output: Ready-to-print GCODE file
+
+Each stage in the pipeline:
+- Has clear input/output interfaces
+- Includes validation steps
+- Can be independently tested
+- Supports configuration via parameters
+
+## Pipeline Validation
+
+Each phase of the pipeline can be validated independently:
+
+### Phase 1: Model Generation Validation
+
+```bash
+# Generate base model
+python3 scripts/generate_3mf.py \
+    --material "PLA" \
+    --brand "Test" \
+    --color "Natural" \
+    --printer "Original Prusa MK4S"
+
+# Verify file exists and has correct size
+ls -l output/3mf/Test_PLA_Natural_MK4S.3mf
+```
+
+### Phase 2: Slicing Validation
+
+```bash
+# Slice the model with PrusaSlicer
+prusa-slicer \
+  --export-gcode \
+  --load "slicer-profiles/PrusaResearch/2.1.11.ini" \
+  --printer "Original Prusa MK4S" \
+  --print "0.20mm QUALITY MK4S" \
+  --filament "Generic PLA" \
+  --print-settings "ironing=1" \
+  --print-settings "ironing_type=top" \
+  --print-settings "ironing_flowrate=15" \
+  "output/3mf/Test_PLA_Natural_MK4S.3mf" \
+  --output "output/gcode/Test_PLA_Natural_MK4S_quality.gcode"
+
+# Check for ironing in the GCODE
+grep -A10 ";TYPE:Ironing" output/gcode/Test_PLA_Natural_MK4S_quality.gcode
+```
+
+### Full Pipeline Validation
+
+Test the complete pipeline with a known-good configuration:
+
+```bash
+# 1. Generate 3MF
+python3 scripts/generate_3mf.py \
+    --material "PLA" \
+    --brand "Prusament" \
+    --color "Galaxy Black" \
+    --printer "Original Prusa MK4S"
+
+# 2. Generate GCODE
+prusa-slicer \
+  --export-gcode \
+  --load "slicer-profiles/PrusaResearch/2.1.11.ini" \
+  --printer "Original Prusa MK4S" \
+  --print "0.20mm QUALITY MK4S" \
+  --filament "Prusament PLA" \
+  --print-settings "ironing=1" \
+  --print-settings "ironing_type=top" \
+  --print-settings "ironing_flowrate=15" \
+  "output/3mf/Prusament_PLA_Galaxy_Black_MK4S.3mf" \
+  --output "output/gcode/Prusament_PLA_Galaxy_Black_MK4S_quality.gcode"
+
+# 3. Check GCODE for ironing
+grep -A10 ";TYPE:Ironing" output/gcode/Prusament_PLA_Galaxy_Black_MK4S_quality.gcode
+```
+
+## Test File Organization
+
+To keep the repository clean and organized, all test and validation files should be stored in specific directories:
+
+```
+.
+├── tests/
+│   ├── tmp/              # Temporary files during testing (gitignored)
+│   ├── fixtures/         # Known-good test files
+│   │   ├── 3mf/         # Base 3MF files
+│   │   └── gcode/       # Known-good GCODE files
+│   └── validation/      # Validation output directory (gitignored)
+│       ├── model/       # Model validation
+│       └── slice/       # Slice validation
+└── output/             # Production output (gitignored)
+    ├── 3mf/
+    └── gcode/
+```
+
+### File Naming Convention
+
+Test files should follow this naming pattern:
+- 3MF models: `{brand}_{material}_{color}_{printer}.3mf`
+- GCODE: `{brand}_{material}_{color}_{printer}_{quality}.gcode`
+
 ## Material CSV Format
 
 Materials are defined in CSV files with the following columns:
 
 ```csv
-Material,Brand,Color,FilamentProfile
-PLA,Prusament,Galaxy Black,Prusament PLA
-PETG,Generic,Blue,Generic PETG
+Material,Brand,Color,FilamentProfile,Temperature
+PLA,Prusament,Galaxy Black,Prusament PLA,215
+PETG,Generic,Blue,Generic PETG,230
 ```
 
 ### Field Descriptions
@@ -38,6 +159,7 @@ PETG,Generic,Blue,Generic PETG
 - `Brand`: Manufacturer name
 - `Color`: Color name
 - `FilamentProfile`: PrusaSlicer built-in filament profile name (e.g., "Prusament PLA", "Generic PETG")
+- `Temperature`: Nozzle temperature for the material
 
 ### Supported Printers
 
@@ -97,7 +219,6 @@ For each material and printer combination, the following files are generated:
 ```
 output/
 ├── 3mf/
-│   └── Brand_Material_Color.3mf           # Base 3MF model
 │   └── Brand_Material_Color_Printer.3mf   # Printer-specific 3MF
 └── gcode/
     └── Brand_Material_Color_Printer_Quality.gcode
@@ -140,53 +261,39 @@ To ensure proper model generation, text fields have the following length limits:
    python3 scripts/get_material_config.py "Generic PLA" MK4S
    python3 scripts/get_material_config.py "Generic PETG" MK4S
    python3 scripts/get_material_config.py "Prusament PLA" MK3S
-   
-   # Test error cases
-   python3 scripts/get_material_config.py "NonexistentMaterial" MK4S  # Should fail
-   python3 scripts/get_material_config.py "Generic PLA"  # No printer specified
    ```
 
 2. Test model generation:
    ```bash
-   # Test with different materials
-   for material in "PLA" "PETG" "ASA"; do
-     openscad -o "test_${material,,}.3mf" swatch/swatch.scad \
-             -D "MATERIAL=\"$material\"" \
-             -D "BRAND=\"Test\"" \
-             -D "COLOR=\"Natural\"" \
-             -D "NOZZLE_TEMP=215"
-   done
+   # Generate model for testing
+   python3 scripts/generate_3mf.py \
+       --material "PLA" \
+       --brand "Test" \
+       --color "Natural" \
+       --printer "Original Prusa MK4S"
    ```
 
-3. Test ironing modifier:
+3. Test full workflow:
    ```bash
-   # Test modifier application
-   python3 scripts/modify_3mf.py test_pla.3mf
-   ```
-
-4. Test full workflow:
-   ```bash
-   # Example workflow for MK4S with PLA
-   # 1. Get material config
-   python3 scripts/get_material_config.py "Generic PLA" MK4S > material.json
-   
-   # 2. Generate model
-   openscad -o test_swatch.3mf swatch/swatch.scad \
-           -D "MATERIAL=\"PLA\"" \
-           -D "BRAND=\"Generic\"" \
-           -D "COLOR=\"Natural\"" \
-           -D "NOZZLE_TEMP=$(jq -r .temperature material.json)"
-   
-   # 3. Add ironing modifier
-   python3 scripts/modify_3mf.py test_swatch.3mf
-   
-   # 4. Slice with PrusaSlicer
-   prusa-slicer --printer "Original Prusa MK4S" \
-                --filament "Generic PLA" \
-                --print "0.20mm QUALITY MK4S" \
-                --export-gcode \
-                --output test_swatch_mk4s.gcode \
-                test_swatch.3mf
+   # Generate 3MF
+   python3 scripts/generate_3mf.py \
+       --material "PLA" \
+       --brand "Generic" \
+       --color "Natural" \
+       --printer "Original Prusa MK4S"
+       
+   # Generate GCODE with ironing enabled
+   prusa-slicer \
+     --export-gcode \
+     --load "slicer-profiles/PrusaResearch/2.1.11.ini" \
+     --printer "Original Prusa MK4S" \
+     --print "0.20mm QUALITY MK4S" \
+     --filament "Generic PLA" \
+     --print-settings "ironing=1" \
+     --print-settings "ironing_type=top" \
+     --print-settings "ironing_flowrate=15" \
+     "output/3mf/Generic_PLA_Natural_MK4S.3mf" \
+     --output "output/gcode/Generic_PLA_Natural_MK4S_quality.gcode"
    ```
 
 ### Common Issues
@@ -199,19 +306,12 @@ To ensure proper model generation, text fields have the following length limits:
 2. OpenSCAD Errors
    - Verify text lengths are within limits
    - Check for special characters in text fields
-   - Ensure NOZZLE_TEMP is a valid number
+   - Ensure temperature is a valid number
 
 3. PrusaSlicer Errors
    - Verify PrusaSlicer version (2.6.0 or later recommended)
    - Check if the print profile exists for your printer
-   - Ensure the model has the ironing modifier correctly applied
-   - For validation issues, check that profile names match exactly with the INI file format:
-     ```ini
-     printer:Original Prusa MK4S
-     print:0.20mm QUALITY @MK4S
-     filament:Prusament PLA @MK4S
-     ```
-   - Note: PrusaSlicer validation is temporarily disabled while investigating correct profile names
+   - Ensure profile names match exactly with the INI file format
 
 ## Progress Tracking
 
@@ -221,44 +321,44 @@ To ensure proper model generation, text fields have the following length limits:
 - CSV-based material definition
 - Input validation in OpenSCAD
 - Text length limitations
-- Ironing modifier implementation
+- Ironing implementation via PrusaSlicer settings
 - PrusaSlicer built-in profile integration
 - Multi-printer support
 
 ### In Progress 🚧
 - Preview image generation
-- Material-specific modifier settings
-- MVP Testing: Prusament PLA on MK4S with ironing modifiers
-- PrusaSlicer validation: Investigating correct profile names and CLI options for validation step
+- Material-specific settings
+- MVP Testing: Prusament PLA on MK4S with ironing
+- CLI argument handling for scripts
 
 ### MVP Testing
 
 Currently focusing on testing the following configuration:
 - Printer: Original Prusa MK4S
 - Material: Prusament PLA
-- Feature: Ironing modifier for the top surface
+- Feature: Ironing for the top surface
 
 To test the MVP configuration:
 
 ```bash
-# Generate 3MF for Prusament PLA
-python3 scripts/generate_3mf.py "Prusament PLA" "Prusament" "Galaxy Black" "MK4S"
+# Generate 3MF and GCODE for Prusament PLA
+python3 scripts/generate_3mf.py \
+    --material "PLA" \
+    --brand "Prusament" \
+    --color "Galaxy Black" \
+    --printer "Original Prusa MK4S"
 ```
-
-Note: The script will generate the 3MF file with ironing modifiers but currently skips PrusaSlicer validation.
-This is temporary while we investigate the correct profile names and CLI options for validation.
 
 ### Todo 📝
 - Add test cases for model generation
 - Implement error reporting in GitHub Actions
 - Add support for custom material profiles
 - Improve error messages and validation
-- Fix PrusaSlicer validation step with correct profile names
 
 ## Contributing
 
 1. Update material definitions in the CSV files
-2. Test locally using OpenSCAD
+2. Test locally using OpenSCAD and PrusaSlicer
 3. Submit a pull request
 
 ## Local Development
@@ -280,25 +380,4 @@ This is temporary while we investigate the correct profile names and CLI options
 2. Update submodules if needed:
    ```bash
    git submodule update --init --recursive
-   ```
-
-### Testing Locally
-
-1. Generate a test swatch:
-   ```bash
-   # Generate 3MF for MK4S
-   python3 scripts/get_material_config.py "Prusament PLA" MK4S > material.json
-   openscad -o test_swatch.3mf swatch/swatch.scad -D "MATERIAL=\"PLA\"" \
-           -D "BRAND=\"Prusament\"" -D "COLOR=\"Galaxy Black\"" \
-           -D "NOZZLE_TEMP=$(jq -r .temperature material.json)"
-   
-   # Add ironing modifier
-   python3 scripts/modify_3mf.py test_swatch.3mf
-   
-   # Slice with PrusaSlicer
-   prusa-slicer --printer "Original Prusa MK4S" \
-                --filament "Prusament PLA" \
-                --print "0.20mm QUALITY MK4S" \
-                --output test_swatch_mk4s_quality.gcode \
-                test_swatch.3mf
    ``` 
