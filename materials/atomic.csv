@@ -1,2 +1,3 @@
-Material,Brand,Color,Profile
-PLA,Atomic Filament,Bright White,TBD
+Material,Brand,Color,FilamentProfile,Temperature
+PLA,Atomic Filament,Bright White,Generic PLA,215
+PLA,Atomic Filament,Starry Night,Generic PLA,212
