@@ -1,0 +1,66 @@
+---
+description: OpenSCAD Guidelines
+globs: **/*.scad
+alwaysApply: false
+---
+# OpenSCAD Guidelines
+
+Guidelines for maintaining and modifying OpenSCAD files in the swatch generator project.
+
+<rule>
+name: openscad_guidelines
+description: Standards for writing and maintaining OpenSCAD files
+filters:
+  - type: file_extension
+    pattern: "\\.scad$"
+
+actions:
+  - type: suggest
+    message: |
+      # OpenSCAD Best Practices
+
+      ## Code Structure
+      - Use modules for reusable components
+      - Place constants and parameters at the top of the file
+      - Use descriptive variable names (`layer_height` not `lh`)
+      - Add comments for complex operations
+
+      ## Parameters
+      - All swatches must support the following parameters:
+        - `MATERIAL`: Material type (string)
+        - `BRAND`: Brand name (string)
+        - `COLOR`: Color name (string)
+        - `NOZZLE_TEMP`: Temperature in celsius (number)
+        - `LAYER_HEIGHT`: Layer height in mm (number)
+
+      ## Modeling Guidelines
+      - Ensure text is properly sized and has sufficient depth
+      - Keep wall thickness at least 2x nozzle diameter
+      - Add chamfers to sharp edges when possible
+      - Design for printability without supports
+      - Use the BOSL2 library for complex geometry
+</rule>
+
+## Common Issues
+
+- Text too small or shallow
+- Overlapping geometry causing manifold errors
+- Excessive polygon count causing slowdowns
+
+## Examples
+
+```scad
+// Good practice - parametric values
+module swatch_text(material, brand, color, temp) {
+  // Implementation
+}
+
+// Bad practice - hardcoded values
+module swatch_text() {
+  text("PLA", size=10);
+}
+```
+
+## Metadata
+- Priority: high
+- Version: 1.0 

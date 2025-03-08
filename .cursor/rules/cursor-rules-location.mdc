@@ -1,0 +1,117 @@
+---
+description: Cursor Rules Location
+globs: *.mdc
+alwaysApply: false
+---
+# Cursor Rules Location
+
+Rules for placing and organizing Cursor rule files in the repository.
+
+<rule>
+name: cursor_rules_location
+description: Standards for placing Cursor rule files in the correct directory
+filters:
+  # Match any .mdc files
+  - type: file_extension
+    pattern: "\\.mdc$"
+  # Match files that look like Cursor rules
+  - type: content
+    pattern: "(?s)<rule>.*?</rule>"
+  # Match file creation events
+  - type: event
+    pattern: "file_create"
+
+actions:
+  - type: reject
+    conditions:
+      - pattern: "^(?!\\.\\/\\.cursor\\/rules\\/.*\\.mdc$)"
+        message: "Cursor rule files (.mdc) must be placed in the .cursor/rules directory"
+
+  - type: suggest
+    message: |
+      When creating Cursor rules:
+
+      1. Always place rule files in PROJECT_ROOT/.cursor/rules/:
+         ```
+         .cursor/rules/
+         ├── your-rule-name.mdc
+         ├── another-rule.mdc
+         └── ...
+         ```
+
+      2. Follow the naming convention:
+         - Use kebab-case for filenames
+         - Always use .mdc extension
+         - Make names descriptive of the rule's purpose
+
+      3. Directory structure:
+         ```
+         PROJECT_ROOT/
+         ├── .cursor/
+         │   └── rules/
+         │       ├── your-rule-name.mdc
+         │       └── ...
+         └── ...
+         ```
+
+      4. Never place rule files:
+         - In the project root
+         - In subdirectories outside .cursor/rules
+         - In any other location
+
+      5. IMPORTANT: Known issues with saving .mdc files
+         - Normal save commands may not work for .mdc files
+         - If changes aren't persisting, use one of these workarounds:
+           a. Use command palette: Cmd/Ctrl + Shift + P > "New Cursor Rule"
+           b. Close Cursor completely, select "Override" when prompted
+           c. Create as .md first, then rename to .mdc
+           d. Copy content and edit in a different editor
+</rule>
+
+## Examples
+
+- **Bad: Rule file in wrong location**
+  ```
+  rules/my-rule.mdc
+  my-rule.mdc
+  .rules/my-rule.mdc
+  ```
+
+- **Good: Rule file in correct location**
+  ```
+  .cursor/rules/my-rule.mdc
+  ```
+
+## Known Bugs and Workarounds
+
+There are currently some issues with creating and editing .mdc files:
+
+1. **Files must use .mdc extension**
+   - Rules must have the .mdc extension to be recognized
+   - This is currently undocumented in official documentation
+
+2. **Saving issues with .mdc files**
+   - Normal save commands often don't persist changes
+   - Cursor AI may show changes that aren't actually saved
+
+3. **Workarounds for editing rules:**
+   - **Method 1:** Use command palette `Cmd/Ctrl + Shift + P` > `New Cursor Rule`
+   - **Method 2:** When editing existing rules:
+     1. Close Cursor completely after editing
+     2. When prompted about "Unsaved Changes"
+     3. Select the "Override" option
+     4. Reopen Cursor to see changes
+   - **Method 3:** Have the agent create files as .md first, then rename to .mdc
+   - **Method 4:** Copy content from Cursor and paste into another editor
+
+## Validation
+
+After creating or editing a rule, verify it was saved correctly:
+```bash
+# Check file content outside of Cursor
+cat .cursor/rules/your-rule-name.mdc
+```
+
+## Metadata
+- Priority: high
+- Version: 1.1

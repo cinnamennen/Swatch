@@ -1,0 +1,107 @@
+---
+description: Cursor Rules Known Bugs
+globs: 
+alwaysApply: true
+---
+# Cursor Rules Known Bugs and Workarounds
+
+This rule documents known bugs and workarounds when working with Cursor rules.
+
+<rule>
+name: cursor_rules_bugs
+description: Documents known bugs and workarounds for Cursor rules
+filters:
+  - type: file_path
+    pattern: ".*\\.mdc$"
+
+actions:
+  - type: suggest
+    message: |
+      # Cursor Rules Known Bugs and Workarounds
+
+      ## 📝 File Creation Issues
+      
+      1. **Always use the .mdc extension**
+         - Rules must have the .mdc extension to be recognized
+         - This requirement is currently undocumented
+      
+      2. **File Location Requirements**
+         - Rules must be in the `.cursor/rules/` directory
+         - Subdirectories within rules/ are not currently supported
+
+      ## 💾 Saving Issues
+      
+      Saving .mdc files is problematic - changes often don't persist despite appearing to save.
+      
+      **Workarounds for saving:**
+      
+      1. **Command Palette Method:**
+         - Use `Cmd/Ctrl + Shift + P` > `New Cursor Rule`
+         - This creates properly formatted rules
+      
+      2. **Close and Override Method:**
+         - After editing, close Cursor completely
+         - When prompted about "Unsaved Changes"
+         - Select the "Override" option
+         - Reopen Cursor to see if changes persisted
+      
+      3. **Extension Swap Method:**
+         - Create as .md file first
+         - Add proper frontmatter
+         - Save normally
+         - Rename to .mdc
+      
+      4. **External Editor Method:**
+         - Copy content from Cursor
+         - Edit in another text editor
+         - Save and check results
+
+      ## 🔍 Validation
+      
+      After editing, always verify your changes persisted:
+      ```bash
+      cat .cursor/rules/your-rule-name.mdc
+      ```
+      
+      ## 📋 Frontmatter Format
+      
+      Always include proper frontmatter:
+      ```yaml
+      ---
+      description: Brief Description
+      globs: file/pattern/to/match
+      alwaysApply: false
+      ---
+      ```
+</rule>
+
+## Detailed Explanation
+
+This bug was reported and discussed in the [Cursor forum thread](https://forum.cursor.com/t/bug-rules-in-rules-folder-require-undocumented-mdc-format-and-special-save-process/50379).
+
+### Known Issues
+
+1. **Extension Requirements**
+   - Rules **must** use the `.mdc` extension
+   - This requirement is undocumented in official guides
+
+2. **Saving Behavior**
+   - Normal save operations (Ctrl+S, menu save) often fail silently
+   - The editor displays the changes but they aren't persisted
+   - No error message or indication that the save failed
+
+3. **Frontmatter Requirements**
+   - Rules require proper YAML frontmatter
+   - Missing or malformed frontmatter can cause rules to be ignored
+
+### Alternative Approaches
+
+If you're having persistent issues with rules:
+
+1. Consider using a `.cursorrules` file in the project root
+2. Use the command palette for creating new rules
+3. Edit rules in an external editor
+
+## Metadata
+- Priority: high
+- Version: 1.0 

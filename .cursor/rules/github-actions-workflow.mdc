@@ -1,0 +1,71 @@
+---
+description: GitHub Actions Workflow Guidelines
+globs: .github/workflows/*.yml
+alwaysApply: false
+---
+
+# GitHub Actions Workflow Guidelines
+
+Best practices for maintaining GitHub Actions workflow files in this project.
+
+<rule>
+name: github_actions_workflow
+description: Guidelines for GitHub Actions workflow files
+filters:
+  - type: file_path
+    pattern: "\\.github/workflows/.*\\.yml$"
+
+actions:
+  - type: suggest
+    message: |
+      # GitHub Actions Workflow Best Practices
+
+      ## General Guidelines
+      - Use specific versions for all actions (e.g., `actions/checkout@v3` not `actions/checkout@main`)
+      - Run jobs on Ubuntu unless Windows/macOS is specifically required
+      - Set up proper dependencies with `needs:` for sequential jobs
+      - Include proper error handling and conditional logic
+
+      ## Specific to This Project
+      - Always install OpenSCAD and PrusaSlicer as core dependencies
+      - Set up clear output paths for artifacts
+      - Upload both 3MF and GCODE files as artifacts
+      - Create releases with descriptive tags and body text
+      - Process all materials in CSV files automatically
+
+      ## Security Considerations
+      - Never expose sensitive credentials in logs or environment variables
+      - Use GitHub Secrets for any sensitive information
+      - Restrict GitHub token permissions to the minimum required
+</rule>
+
+## Example Workflow Structure
+
+```yaml
+name: Generate Swatches
+
+on:
+  push:
+    paths:
+      - 'materials/**'
+      - 'swatch/**'
+      - 'scripts/**'
+      - '.github/workflows/generate-swatches.yml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    # Job implementation
+```
+
+## Common Pitfalls
+
+- Missing dependencies for OpenSCAD/PrusaSlicer
+- Incorrect path references for cross-platform compatibility
+- Failing to check command exit codes
+- Not handling errors gracefully
+
+## Metadata
+- Priority: high
+- Version: 1.0 

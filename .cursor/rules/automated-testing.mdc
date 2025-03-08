@@ -1,0 +1,87 @@
+---
+description: Automated Testing
+globs: **/*.{py,scad}
+alwaysApply: false
+---
+# Automated Testing
+
+Runs automated tests when important files change to ensure pipeline integrity.
+
+<rule>
+name: automated_testing
+description: Run tests on file changes to core components
+filters:
+  - type: file_change
+    pattern: "scripts/*.py"
+  - type: file_change
+    pattern: "swatch/*.scad"
+
+actions:
+  - type: execute
+    command: "python3 scripts/test_pipeline.py"
+  - type: suggest
+    message: |
+      # Testing Completed
+      
+      Pipeline tests have been run. If all tests passed, consider committing your changes with:
+      
+      ```bash
+      git add .
+      git commit -m "feat(component): brief description of changes"
+      ```
+      
+      If tests failed, check:
+      - Log output for specific errors
+      - Test fixtures for outdated expectations
+      - Environment configuration
+      
+      Common testing fixes:
+      1. Update expected output in test fixtures
+      2. Check for missing dependencies
+      3. Ensure OpenSCAD and PrusaSlicer are correctly installed
+      4. Verify material profiles exist in slicer-profiles directory
+</rule>
+
+## Test Categories
+
+The test pipeline runs several types of tests:
+
+1. **Unit Tests**
+   - Test individual functions in isolation
+   - Verify correct behavior with known inputs
+   - Mock external dependencies
+
+2. **Integration Tests**
+   - Test interaction between components
+   - Verify OpenSCAD model generation
+   - Check PrusaSlicer processing
+
+3. **End-to-End Tests**
+   - Test the complete pipeline from material definition to GCODE
+   - Verify ironing settings are correctly applied
+   - Validate output file structure and content
+
+## Test Configuration
+
+Tests can be configured through:
+
+```
+tests/config.json
+```
+
+Settings include:
+- Test material configurations
+- Mock dependencies
+- Expected output templates
+
+## Adding New Tests
+
+When adding features, always add corresponding tests:
+
+1. Unit tests in `tests/unit/`
+2. Integration tests in `tests/integration/`
+3. End-to-end tests in `tests/e2e/`
+
+## Metadata
+- Priority: medium
+- Version: 1.0 

@@ -1,0 +1,81 @@
+---
+description: Model Validation
+globs: **/*.(3mf|stl)
+alwaysApply: false
+---
+# Model Validation
+
+Validates generated 3D models to ensure they meet quality standards.
+
+<rule>
+name: model_validation
+description: Validates generated 3D models and provides troubleshooting guidance
+filters:
+  - type: file_extension
+    pattern: "\\.(3mf|stl)$"
+  - type: event
+    pattern: "file_create"
+
+actions:
+  - type: execute
+    command: "python3 scripts/validate.py \"$FILE\""
+  - type: suggest
+    message: |
+      # Model Validation Completed
+
+      ## Common Issues to Check
+      
+      If validation failed, check for:
+      
+      1. **Manifold Problems**
+         - Non-watertight mesh
+         - Overlapping faces
+         - Zero-thickness walls
+      
+      2. **Dimensional Issues**
+         - Text too small for nozzle diameter
+         - Features below printable resolution
+         - Insufficient clearance between parts
+      
+      3. **Printer Compatibility**
+         - Model exceeds build volume
+         - Unsupported overhangs
+         - Material-specific limitations
+</rule>
+
+## Validation Process
+
+The validation script performs the following checks:
+
+1. **File Integrity**
+   - File exists and has correct format
+   - File size is reasonable
+   - File can be parsed by appropriate tools
+
+2. **Mesh Quality**
+   - Check for non-manifold edges
+   - Verify all normals are consistent
+   - Ensure minimum wall thickness
+
+3. **Print Compatibility**
+   - Verify dimensions fit target printers
+   - Check for printability issues
+   - Validate against material constraints
+
+## Troubleshooting
+
+When validation fails:
+
+1. **OpenSCAD Issues**
+   - Adjust model parameters
+   - Check for self-intersecting geometry
+   - Use preview mode to identify problem areas
+
+2. **Slicing Issues**
+   - Verify PrusaSlicer settings
+   - Check material compatibility
+   - Review printer profiles
+
+## Metadata
+- Priority: high
+- Version: 1.0 

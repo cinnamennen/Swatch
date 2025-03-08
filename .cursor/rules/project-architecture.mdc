@@ -1,0 +1,68 @@
+---
+description: Project Architecture Reference
+globs: 
+alwaysApply: true
+---
+# Project Architecture Reference
+
+This rule provides a reference to the project's architecture as documented in the README.
+
+<rule>
+name: project_architecture
+description: Reference to project architecture for contextual awareness
+filters:
+  - type: file_change
+    pattern: "*"
+
+actions:
+  - type: suggest
+    when:
+      - pattern: "pipeline|architecture"
+        message: |
+          # Swatch Generator Pipeline Architecture
+
+          The project follows a two-phase architecture:
+
+          ## Phase 1: Model Generation
+          1. **Base Model Generation** - OpenSCAD creates 3D model with material parameters
+          2. **Printer-Specific Configuration** - PrusaSlicer applies printer settings and enables ironing
+
+          ## Phase 2: Slicing
+          1. **GCODE Generation** - PrusaSlicer slices the 3MF file with built-in ironing
+
+          See README.md for more detailed architecture information.
+
+  - type: suggest
+    when:
+      - pattern: "material|filament|csv"
+        message: |
+          # Material Handling Reference
+
+          Materials are defined in CSV files with the following format:
+          ```csv
+          Material,Brand,Color,FilamentProfile,Temperature
+          PLA,Prusament,Galaxy Black,Prusament PLA,215
+          PETG,Generic,Blue,Generic PETG,230
+          ```
+
+          The system supports all Prusa-compatible materials with printer-specific profiles.
+</rule>
+
+## Usage
+
+This rule activates when:
+- You're editing core project files 
+- You ask about project architecture or pipeline
+- You reference materials or filament handling
+
+## Design Philosophy
+
+The project aims for:
+- Complete automation without manual manipulation
+- Material-specific optimization
+- Using official PrusaSlicer profiles
+- Automated ironing for top surfaces
+
+## Metadata
+- Priority: medium
+- Version: 1.0 

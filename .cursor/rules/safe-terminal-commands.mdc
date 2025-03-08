@@ -1,0 +1,88 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Safe Terminal Commands
+globs: 
+alwaysApply: true
+---
+# Safe Terminal Commands
+
+Defines which terminal commands can be executed without requiring explicit user approval.
+
+<rule>
+name: safe_terminal_commands
+description: Guidance for which commands can be run without requiring explicit user approval
+filters:
+  - type: event
+    pattern: "terminal_command"
+
+actions:
+  - type: suggest
+    message: |
+      # Safe Terminal Commands Reference
+      
+      The following commands can be run without requiring explicit user approval:
+      
+      ## Git Commands
+      - `git status` - Check repository status
+      - `git add <file>` - Stage files for commit
+      - `git commit -m "message"` - Commit changes
+      - `git push` - Push commits to remote
+      - `git pull` - Fetch and merge from remote
+      - `git branch` - List branches
+      - `git log` - Show commit history
+      - `git diff` - Show changes
+      
+      ## Build/Test Commands
+      - `python scripts/*.py` - Run Python scripts
+      - OpenSCAD model generation
+      - PrusaSlicer commands with safe parameters
+      
+      ## Informational Commands
+      - `ls`/`dir` - List directory contents
+      - `cat`/`type` - View file contents
+      - `grep`/`findstr` - Search in files
+      - `pwd`/`cd` - Working directory operations
+      
+      ## Prohibited Commands
+      - Any destructive commands like `rm -rf` without specific targets
+      - `git push --force` - Force pushing
+      - `git reset --hard` without specific confirmation
+      - Any commands that could expose sensitive information
+</rule>
+
+## Purpose of This Rule
+
+This rule exists to make the workflow more efficient by:
+
+1. Allowing the AI to run common, recoverable commands without interrupting the workflow
+2. Establishing clear boundaries on what commands can be automatically executed
+3. Reducing the need for user confirmation on routine operations
+
+## Examples of Safe Commands
+
+```bash
+# These can be run without approval
+git status
+git add scripts/generate_3mf.py
+git commit -m "feat(scripts): improve error handling in generate_3mf.py"
+git push
+python scripts/generate_3mf.py --material "PLA" --brand "Test" --color "Red"
+ls -la .cursor/rules/
+```
+
+## Examples of Commands Requiring Approval
+
+```bash
+# These should always require approval
+git push --force
+git reset --hard HEAD~3
+rm -rf *
+```
+
+## Metadata
+- Priority: high
+- Version: 1.0 

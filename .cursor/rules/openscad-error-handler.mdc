@@ -1,0 +1,106 @@
+---
+description: OpenSCAD Error Handler
+globs: **/*.scad
+alwaysApply: false
+---
+# OpenSCAD Error Handler
+
+Provides solutions for common OpenSCAD errors encountered during model generation.
+
+<rule>
+name: openscad_error_handler
+description: Troubleshooting guide for common OpenSCAD errors
+filters:
+  - type: content
+    pattern: "CGAL error|manifold|non-manifold"
+
+actions:
+  - type: suggest
+    message: |
+      # OpenSCAD Error Solutions
+      
+      ## Manifold Errors
+      
+      ```
+      ERROR: CGAL error in CGAL_Nef_polyhedron3(): CGAL ERROR: assertion violation!
+      ERROR: Assertion failed: e_below != SHalfedge_handle() [...]
+      ```
+      
+      **Solutions:**
+      - Check for overlapping geometry
+      - Ensure proper boolean operations
+      - Add small offsets (0.01mm) between connecting parts
+      - Use `minkowski()` with a small sphere to fix thin walls
+      
+      ## CGAL Processing Errors
+      
+      ```
+      ERROR: CGAL error in CGALUtils::createPolyhedronFromPolySet(): CGAL ERROR: assertion violation!
+      ```
+      
+      **Solutions:**
+      - Simplify complex geometry
+      - Break large models into smaller components
+      - Use `hull()` instead of complex boolean operations
+      - Increase CGAL mesh settings in Preferences
+      
+      ## Syntax and Import Errors
+      
+      ```
+      ERROR: Can't open imported file 'BOSL2/std.scad'
+      ```
+      
+      **Solutions:**
+      - Check path to imported libraries
+      - Verify BOSL2 is properly installed
+      - Use absolute paths when necessary
+      - Check for syntax errors in includes
+</rule>
+
+## Common OpenSCAD Issues in Swatch Generation
+
+### Text Problems
+
+Text in OpenSCAD can cause manifold errors when:
+- Text is too thin
+- Character spacing is too tight
+- Depth is insufficient for the nozzle size
+
+Solution: 
+```scad
+// Good practice for text
+linear_extrude(height=1) {
+    text(text="PLA", size=10, font="Liberation Sans:style=Bold");
+}
+```
+
+### Boolean Operation Failures
+
+Complex boolean operations often fail with CGAL errors:
+
+Solution:
+```scad
+// Instead of direct difference
+difference() {
+    cube([10,10,10]);
+    translate([1,1,1]) sphere(r=5);
+}
+
+// Try decomposing into simpler operations
+difference() {
+    cube([10,10,10]);
+    translate([1,1,1]) cube([8,8,8]);
+}
+```
+
+### Performance Optimization
+
+For complex models:
+- Use `render()` strategically
+- Avoid deeply nested operations
+- Use `projection()` carefully (high computational cost)
+- Consider `hull()` for complex curves
+
+## Metadata
+- Priority: high
+- Version: 1.0 
