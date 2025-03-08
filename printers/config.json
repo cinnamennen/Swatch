@@ -1,0 +1,52 @@
+{
+  "printers": [
+    {
+      "name": "Original Prusa MK3S+",
+      "profile": "Original Prusa MK3.5",
+      "print_profiles": [
+        "0.20mm QUALITY MK3.5",
+        "0.28mm DRAFT MK3.5"
+      ]
+    },
+    {
+      "name": "Original Prusa MK4IS",
+      "profile": "Original Prusa MK4S",
+      "print_profiles": [
+        "0.20mm QUALITY MK4S",
+        "0.28mm DRAFT MK4S"
+      ]
+    },
+    {
+      "name": "Original Prusa MK4S",
+      "profile": "Original Prusa MK4S",
+      "print_profiles": [
+        "0.20mm QUALITY MK4S",
+        "0.28mm DRAFT MK4S"
+      ]
+    },
+    {
+      "name": "Original Prusa MINI+",
+      "profile": "Original Prusa MINI+",
+      "print_profiles": [
+        "0.20mm QUALITY MINI",
+        "0.28mm DRAFT MINI"
+      ]
+    },
+    {
+      "name": "Prusa CORE ONE",
+      "profile": "Original Prusa CORE ONE",
+      "print_profiles": [
+        "0.20mm QUALITY COREONE",
+        "0.28mm DRAFT COREONE"
+      ]
+    },
+    {
+      "name": "Original Prusa XL IS",
+      "profile": "Original Prusa XL",
+      "print_profiles": [
+        "0.20mm QUALITY XL",
+        "0.28mm DRAFT XL"
+      ]
+    }
+  ]
+} 
