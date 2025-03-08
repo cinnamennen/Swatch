@@ -10,16 +10,18 @@ Automated system to generate and slice 3D printable filament swatches. Uses GitH
 - Uses official PrusaSlicer built-in material profiles
 - Automatic ironing of top surfaces via built-in PrusaSlicer settings
 - GitHub Actions automation for continuous deployment
+- Release assets ready for Printables upload
 
 ## Project Structure
 
 ```
 .
 ├── materials/           # CSV files containing material definitions
-├── swatch/             # OpenSCAD source files
-├── scripts/            # Python scripts for automation
-├── slicer-profiles/    # Official PrusaSlicer profiles (submodule)
-└── .github/workflows/  # GitHub Actions workflow definitions
+├── swatch/              # OpenSCAD source files
+├── scripts/             # Python scripts for automation
+├── slicer-profiles/     # Official PrusaSlicer profiles (submodule)
+├── printers/            # Printer configurations
+└── .github/workflows/   # GitHub Actions workflow definitions
 ```
 
 ## Pipeline Architecture
@@ -326,7 +328,6 @@ To ensure proper model generation, text fields have the following length limits:
 - Multi-printer support
 
 ### In Progress 🚧
-- Preview image generation
 - Material-specific settings
 - MVP Testing: Prusament PLA on MK4S with ironing
 - CLI argument handling for scripts
