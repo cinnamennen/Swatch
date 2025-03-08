@@ -44,3 +44,5 @@ temp/
 # Local configuration
 config.local.ini
 settings.local.json
+
+.cursor/mcp.json

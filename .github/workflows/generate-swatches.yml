@@ -63,7 +63,7 @@ jobs:
                 safe_profile_type=$(echo "$profile_type" | tr '[:upper:]' '[:lower:]')
                 
                 # Extract layer height from profile name (e.g., "0.20mm QUALITY" -> 0.20)
-                layer_height=$(echo "$print_profile" | grep -o '[0-9]\.[0-9]\+' || echo "0.20")
+                layer_height=$(echo "$print_profile" | grep -o '[0-9]\.[0-9]\+' | head -n 1 || echo "0.20")
                 
                 echo "Slicing model for $safe_name on $printer_name with $print_profile..."
                 output_name="${safe_name}_${safe_printer_name}_${safe_profile_type}"
