@@ -1,7 +1,8 @@
-Material,Brand,Color,Profile
-PLA,Prusament,Galaxy Black,TBD
-PETG,Prusament,Jet Black,TBD
-PLA Blend,Prusament,Chalky Blue,TBD
-rPLA,Prusament,Natural White,TBD
-PLA Silk,Generic,Gold,TBD
-PLA Variant Long,Prusament,Magnificent Long Color Type,TBD
+Material,Brand,Color,FilamentProfile,Temperature
+PLA,Prusament,Galaxy Black,Prusament PLA,215
+PETG,Prusament,Jet Black,Prusament PETG,230
+PLA Blend,Prusament,Chalky Blue,Prusament PLA,215
+rPLA,Prusament,Natural White,Prusament PLA,210
+PLA Silk,Generic,Gold,Generic PLA,215
+PLA Variant Long,Prusament,Magnificent Long Color Type,Prusament PLA,215
+PLA,Prusament,Mystic Brown,Prusament PLA,215
