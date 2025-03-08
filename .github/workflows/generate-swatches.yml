@@ -7,6 +7,7 @@ on:
       - 'swatch/**'
       - 'scripts/**'
       - '.github/workflows/generate-swatches.yml'
+      - 'printers/**'
   workflow_dispatch:
 
 jobs:
@@ -27,6 +28,11 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
+        
+    - name: Create output directories
+      run: |
+        mkdir -p output/3mf
+        mkdir -p output/gcode
         
     - name: Process materials
       run: |
@@ -112,6 +118,6 @@ jobs:
           output/gcode/*.gcode
         name: "Swatch Models ${{ github.sha }}"
         tag_name: "v${{ github.run_number }}"
-        body: "Automatically generated swatch models"
+        body: "Automatically generated swatch models and GCODE files ready for Printables upload"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
